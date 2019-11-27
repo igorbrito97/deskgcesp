@@ -88,9 +88,7 @@ class Login extends React.Component {
                     onClick={() =>
                       this.props.loginAction(
                         this.state.email,
-                        // this.state.password
-                        //"igor@hotmail.com",
-                        "igor123"
+                        this.state.password
                       )
                     }
                   >

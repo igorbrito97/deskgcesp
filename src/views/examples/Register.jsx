@@ -1,6 +1,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import registerAction from "actions/registerAction";
+import loginAction from "actions/loginAction"
 
 // reactstrap components
 import {
@@ -81,12 +82,6 @@ class Register extends React.Component {
                     />
                   </InputGroup>
                 </FormGroup>
-                <div className="text-muted font-italic">
-                  <small>
-                    password strength:{" "}
-                    <span className="text-success font-weight-700">strong</span>
-                  </small>
-                </div>
                 <Row className="my-4">
                   <Col xs="12">
                     <div className="custom-control custom-control-alternative custom-checkbox">
@@ -114,12 +109,12 @@ class Register extends React.Component {
                     className="mt-4"
                     color="primary"
                     type="button"
-                    onClick={() =>
+                    onClick={() => {
                       this.props.registerAction(
                         this.state.name,
                         this.state.email,
                         this.state.password
-                      )
+                      )}
                     }
                   >
                     Criar conta
