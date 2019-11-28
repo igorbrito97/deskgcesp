@@ -3,7 +3,9 @@ import Typography from '@material-ui/core/Typography';
 
 class MultilineText extends React.Component {
   state = {
-      text: ""
+      text: "",
+      variant: "",
+      align: "",
   }
 
   constructor(props){
@@ -16,12 +18,24 @@ class MultilineText extends React.Component {
     })
   }
   
+  componentDidUpdate(prevProps) {
+    if(prevProps.text !== this.props.text) {
+      if(this.props.text){
+        this.setState({
+          text: this.props.text,
+          variant: this.props.variant ? this.props.variant : "b1",
+          align: this.props.align ? this.props.align : "inherit"
+        })
+      }
+    }
+  }
 
   render() {
-    const {text} = this.state;
+    const {text,variant,align} = this.state;
+    console.log("text",text,'varia',variant);
     return (
         String(text).split("\n").map(line => {
-            return <Typography>{line}</Typography>
+            return <Typography variant={variant} align={align}>{line}</Typography>
         })
     );
   }

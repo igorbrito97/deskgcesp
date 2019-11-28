@@ -10,17 +10,18 @@ import {
   Container,
   Row,
 } from "reactstrap";
-
 import { 
-    GridList,
-    GridListTile,
-    Card,
-    CardMedia,
-    CardContent,
-    CardActions,
-    Typography
+  Grid,
+  GridList,
+  GridListTile,
+  Card,
+  CardMedia,
+  CardContent,
+  CardActions,
+  Typography
 } from '@material-ui/core';
 import Header from "components/Headers/Header.jsx";
+import MultilineText from "components/MultilineText.jsx";
 
 class Cursos extends React.Component {
     state = {
@@ -75,12 +76,12 @@ class Cursos extends React.Component {
       return {
           pathname: '/admin/inscricao-curso', state:{
             id: curso.curso_cod,
-            nome:curso.curso_nome,
+            titulo:curso.curso_titulo,
+            subtitulo:curso.curso_subtitulo,
             descricao: curso.curso_descricao,
             idArea: curso.areacurso_cod,
+            visivel: curso.curso_visivel,
             img: curso.img,
-            dataInicio: curso.curso_dataInicio,
-            dataFim: curso.curso_dataFim
           }
       };
     }
@@ -106,19 +107,24 @@ class Cursos extends React.Component {
                                         <CardMedia
                                         height={360} width={240}
                                         top
-                                        title={cursos[item].curso_nome}
+                                        title={cursos[item].curso_titulo}
                                         src={this.getSrc(cursos[item])}
                                         />
                                         <CardContent>
-                                            <Typography variant="h6"> {cursos[item].curso_nome} </Typography>
-                                            <Typography variant="body6"> {cursos[item].curso_descricao} </Typography>
+                                            <Typography variant="h6"> {cursos[item].curso_titulo} </Typography>
+                                            <MultilineText text={cursos[item].curso_subtitulo}/>
                                         </CardContent>
                                         <CardActions>
-                                            <Link to={this.getLink(cursos[item])}>
+                                          <Grid container justify="center">
+                                            <Grid item>
+                                              <Link to={this.getLink(cursos[item])}>
                                                 <Button size="small" color="primary">
                                                     Ver curso
                                                 </Button>
-                                          </Link> 
+                                             </Link> 
+                                            </Grid>
+                                          </Grid>
+                                            
                                         </CardActions>
                                     </Card>
                                 </GridListTile> 

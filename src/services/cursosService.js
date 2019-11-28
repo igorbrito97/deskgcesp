@@ -64,15 +64,15 @@ export const updateAreaCurso = (id,nome,descricao) => {
 
 /* CURSO */
 
-export const addCurso = (nome,descricao,areaCod,dataInicio,dataFim,imgCurso) => {
+export const addCurso = (titulo,subtitulo,descricao,areaCod,visivel,imgCurso) => {
     // ver de enviar usuario, ai ao inves de anonimaneto vai ser real
     const CursoRef = databaseRef.child("curso").push();
     CursoRef.set({
       curso_cod: CursoRef.key,
-      curso_nome: nome,
+      curso_titulo: titulo,
+      curso_subtitulo: subtitulo,
       curso_descricao: descricao,
-      curso_dataInicio: dataInicio,
-      curso_dataFim: dataFim,
+      curso_visivel: visivel,
       areacurso_cod: areaCod
     })
     .then(() => {
@@ -134,14 +134,14 @@ export const getAllCursos = async () => {
     })
 };
 
-export const updateCurso = (id,nome,descricao,areaCod,dataInicio,dataFim,imgCurso,prevImgCurso) => {
+export const updateCurso = (id,titulo,subtitulo,descricao,areaCod,visivel,imgCurso,prevImgCurso) => {
     // ver de enviar usuario, ai ao inves de anonimaneto vai ser real
     const AreaCursoRef = databaseRef.child("curso/"+id);
     AreaCursoRef.update({
-      curso_nome: nome,
+      curso_titulo: titulo,
+      curso_subtitulo: subtitulo,
       curso_descricao: descricao,
-      curso_dataInicio: dataInicio,
-      curso_dataFim: dataFim,
+      curso_visivel: visivel,
       areacurso_cod: areaCod
     })
     .then(() => {

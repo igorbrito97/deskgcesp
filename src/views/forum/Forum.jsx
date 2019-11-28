@@ -78,7 +78,6 @@ class Forum extends React.Component {
         .catch(function(error){
 
         })
-        
         const responseTopico = getAllTopicos();
         responseTopico.then(topicos => {
             if(topicos)
@@ -98,8 +97,7 @@ class Forum extends React.Component {
                 })
             })
         }
-
-    };
+    };  
 
     onChange(myState, value) {
         this.setState({
@@ -164,70 +162,69 @@ class Forum extends React.Component {
                                         <Button className="pull-right" color="primary" size="sm" type="button"
                                             onClick={() => this.toggleModal('newTopicModal')}>
                                             Adicionar novo tópico
-                                    </Button>
-                                    <Modal
-                                        className="modal-dialog-centered"
-                                        isOpen={this.state.newTopicModal}
-                                        toggle={() => this.toggleModal("newTopicModal")}
-                                    >
-                                        <div className="modal-header">
-                                            <h5 className="modal-title">
-                                                Atenção!!
-                                            </h5>
-                                            <button
-                                                aria-label="Close"
-                                                className="close"
-                                                data-dismiss="modal"
-                                                type="button"
-                                                onClick={() => this.toggleModal("newTopicModal")}
-                                            >
-                                                <span aria-hidden={true}>×</span>
-                                            </button>
-                                        </div>
-                                        <div className="modal-body">
-                                            <Grid container spacing={3}>
-                                                <Grid item>
-                                                    <Typography>Selecione a área do tópico: </Typography>
+                                        </Button>
+                                        <Modal
+                                            className="modal-dialog-centered"
+                                            isOpen={this.state.newTopicModal}
+                                            toggle={() => this.toggleModal("newTopicModal")}
+                                        >
+                                            <div className="modal-header">
+                                                <h5 className="modal-title">
+                                                    Atenção!!
+                                                </h5>
+                                                <button
+                                                    aria-label="Close"
+                                                    className="close"
+                                                    data-dismiss="modal"
+                                                    type="button"
+                                                    onClick={() => this.toggleModal("newTopicModal")}
+                                                >
+                                                    <span aria-hidden={true}>×</span>
+                                                </button>
+                                            </div>
+                                            <div className="modal-body">
+                                                <Grid container spacing={3}>
+                                                    <Grid item>
+                                                        <Typography>Selecione a área do tópico: </Typography>
+                                                    </Grid>
+                                                    <Grid item>
+                                                    <UncontrolledDropdown> 
+                                                        <DropdownToggle caret defaultValue="Tipo de arquivo">
+                                                            {this.getDropdownLabel()}
+                                                        </DropdownToggle>
+                                                        <DropdownMenu > 
+                                                        {
+                                                            // POPULATE DROPDOWN
+                                                            areas && areas!==undefined &&
+                                                            Object.keys(areas).map((item,index) => {
+                                                                return (
+                                                                <DropdownItem key = {index} onClick = {() => {this.onChange("selectedItem",areas[item])}}> 
+                                                                {areas[item].areaforum_nome} 
+                                                                </DropdownItem>
+                                                                );
+                                                            })
+                                                        } 
+                                                        </DropdownMenu>
+                                                    </UncontrolledDropdown>
+                                                    </Grid>
                                                 </Grid>
-                                                <Grid item>
-                                                <UncontrolledDropdown> 
-                                                    <DropdownToggle caret defaultValue="Tipo de arquivo">
-                                                        {this.getDropdownLabel()}
-                                                    </DropdownToggle>
-                                                    <DropdownMenu > 
-                                                    {
-                                                        // POPULATE DROPDOWN
-                                                        areas && areas!==undefined &&
-                                                        Object.keys(areas).map((item,index) => {
-                                                            return (
-                                                            <DropdownItem key = {index} onClick = {() => {this.onChange("selectedItem",areas[item])}}> 
-                                                            {areas[item].areaforum_nome} 
-                                                            </DropdownItem>
-                                                            );
-                                                        })
-                                                    } 
-                                                    </DropdownMenu>
-                                                </UncontrolledDropdown>
-                                                </Grid>
-                                            </Grid>
-                                        </div>
-                                        <div className="modal-footer">
-                                            <Button
-                                                color="secondary"
-                                                data-dismiss="modal"
-                                                type="button"
-                                                onClick={() => this.toggleModal("newTopicModal")}
-                                            >
-                                                Cancelar
-                                            </Button>
-                                            <Button color="primary" type="button"
-                                                onClick={() => this.redirectAddTopico()}
-                                            >
-                                                Confirmar
-                                            </Button>
-                                            
-                                        </div>
-                                    </Modal>
+                                            </div>
+                                            <div className="modal-footer">
+                                                <Button
+                                                    color="secondary"
+                                                    data-dismiss="modal"
+                                                    type="button"
+                                                    onClick={() => this.toggleModal("newTopicModal")}
+                                                >
+                                                    Cancelar
+                                                </Button>
+                                                <Button color="primary" type="button"
+                                                    onClick={() => this.redirectAddTopico()}
+                                                >
+                                                    Confirmar
+                                                </Button>
+                                            </div>
+                                        </Modal>
                                     </Grid>
                                 </Grid>
                             </CardHeader>

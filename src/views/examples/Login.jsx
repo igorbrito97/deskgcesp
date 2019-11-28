@@ -87,8 +87,10 @@ class Login extends React.Component {
                     type="button"
                     onClick={() =>
                       this.props.loginAction(
-                        this.state.email,
-                        this.state.password
+                        // this.state.email,
+                        // this.state.password
+                        "igor@hotmail.com",
+                        "igor123"
                       )
                     }
                   >

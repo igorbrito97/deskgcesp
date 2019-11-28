@@ -68,7 +68,8 @@ class Cursos extends React.Component {
         return {
           pathname: '/admin/add-cursos', state:{
             id: this.state.selectedItem.curso_cod,
-            nome: this.state.selectedItem.curso_nome,
+            titulo: this.state.selectedItem.curso_titulo,
+            subtitulo: this.state.selectedItem.curso_subtitulo,
             descricao: this.state.selectedItem.curso_descricao,
             dataInicio: this.state.selectedItem.curso_dataInicio,
             dataFim: this.state.selectedItem.curso_dataFim,
@@ -86,7 +87,8 @@ class Cursos extends React.Component {
         return {
           pathname: '/admin/add-videoaula', state:{
             id: this.state.selectedItem.curso_cod,
-            nome: this.state.selectedItem.curso_nome,
+            titulo: this.state.selectedItem.curso_titulo,
+            subtitulo: this.state.selectedItem.curso_subtitulo,
             descricao: this.state.selectedItem.curso_descricao,
             dataInicio: this.state.selectedItem.curso_dataInicio,
             dataFim: this.state.selectedItem.curso_dataFim
@@ -100,7 +102,7 @@ class Cursos extends React.Component {
 
     getName() {
       if(this.state.selectedItem) 
-        return this.state.selectedItem.curso_nome;
+        return this.state.selectedItem.curso_titulo;
       else
         return '';
     }
@@ -146,10 +148,10 @@ class Cursos extends React.Component {
                 <Table className="align-items-center table-flush" responsive>
                   <thead className="thead-light">
                     <tr>
-                      <th scope="col">Nome</th>
+                      <th scope="col">Título</th>
                       <th scope="col">Área</th>
-                      <th scope="col">Data Inicio</th>
-                      <th scope="col">Data Fim</th>
+                      <th scope="col">Vísivel</th>
+                      <th scope="col" />
                       <th scope="col" />
                     </tr>
                   </thead>
@@ -168,18 +170,19 @@ class Cursos extends React.Component {
                   }
                    return (
                       <tr key={index} id="rowCurso">
-                        
                        <td> 
-                           {cursos[item].curso_nome}
+                           {cursos[item].curso_titulo}
                        </td>
                        <td>
                          {cursos[item].areacurso_nome}
                        </td>
                        <td>
-                         {cursos[item].curso_dataInicio}
+                         {cursos[item].curso_visivel ? 'Sim' : 'Não'}
                        </td>
                        <td>
-                         {cursos[item].curso_dataFim}
+                        <Button color="primary" type="button"> 
+                          Visualizar 
+                        </Button>
                        </td>
                        <PermissibleRender
                         userPermissions={userPermissions ? userPermissions : []}

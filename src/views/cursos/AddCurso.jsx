@@ -1,8 +1,8 @@
 import React from "react";
-import { Link } from "react-router-dom" 
+import { Link } from "react-router-dom"
 import { connect } from "react-redux";
 import ReactDatetime from "react-datetime";
-import {addCurso,updateCurso,getAllAreaCursos,getImgCurso} from "services/cursosService";
+import { addCurso, updateCurso, getAllAreaCursos, getImgCurso } from "services/cursosService";
 // reactstrap components
 import {
   Button,
@@ -15,7 +15,6 @@ import {
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
-  FormGroup,
   Form,
   Input,
   InputGroupAddon,
@@ -26,6 +25,9 @@ import {
 } from "reactstrap";
 import {
   Typography,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
   Grid,
   TextField
 } from "@material-ui/core";
@@ -34,7 +36,8 @@ import Header from "components/Headers/Header.jsx";
 class AddCurso extends React.Component {
   state = {
     id: "",
-    nome: "",
+    titulo: "",
+    subtitulo : "",
     descricao: "",
     idArea: "",
     dataInicio: null,
@@ -42,7 +45,8 @@ class AddCurso extends React.Component {
     areas: [],
     selectedItem: null,
     file: null,
-    prevFile: null
+    prevFile: null,
+    visivel: true
   };
 
   onChange = (stateName, value) => {
@@ -54,20 +58,20 @@ class AddCurso extends React.Component {
   componentDidMount = () => {
     const response = getAllAreaCursos();
     response.then((arr) => {
-      this.onChange("areas",arr);
-      if(this.props.location.state && this.props.location.state.id) { //seleciona a area
+      this.onChange("areas", arr);
+      if (this.props.location.state && this.props.location.state.id) { //seleciona a area
         Object.keys(arr).map((item) => {
-          if(this.state.idArea === arr[item].areacurso_cod)
-            this.onChange("selectedItem",arr[item]);
+          if (this.state.idArea === arr[item].areacurso_cod)
+            this.onChange("selectedItem", arr[item]);
         });
       }
     });
 
-    if(this.props.location.state && this.props.location.state.id) {
+    if (this.props.location.state && this.props.location.state.id) {
       const responseImg = getImgCurso(this.props.location.state.id);
       responseImg.then((img) => {
-        if(img)
-          this.onChange("prevFile",img);
+        if (img)
+          this.onChange("prevFile", img);
       });
 
       this.setState({
@@ -77,9 +81,9 @@ class AddCurso extends React.Component {
         dataInicio: this.props.location.state.dataInicio,
         dataFim: this.props.location.state.dataFim,
         idArea: this.props.location.state.idArea
-      });  
+      });
     }
-    
+
   }
 
   toggleModal = state => {
@@ -89,34 +93,33 @@ class AddCurso extends React.Component {
   };
 
   getName = () => {
-    if(this.state.selectedItem)
+    if (this.state.selectedItem)
       return this.state.selectedItem.areacurso_nome;
     else
       return 'Área do curso';
   }
 
   handleFile = () => {
-      const file = document.getElementById('fileInput').files[0];
-      
-      if(file){
-        this.onChange("file",file);
-      }
-      
+    const file = document.getElementById('fileInput').files[0];
+    if (file) {
+      this.onChange("file", file);
+    }
+
   }
 
   getImg = () => {
-    if(this.state.file) 
-      return <img src={URL.createObjectURL(this.state.file)} height={360} width={480}/>
-    else if(this.state.prevFile)
-        return <img src={this.state.prevFile} height={360} width={480}/>
-    else 
-      return 
+    if (this.state.file)
+      return <img src={URL.createObjectURL(this.state.file)} height={360} width={480} />
+    else if (this.state.prevFile)
+      return <img src={this.state.prevFile} height={360} width={480} />
+    else
+      return
   }
 
   getFileLabel() {
-    if(this.state.file)
+    if (this.state.file)
       return this.state.file.name;
-    else  
+    else
       return 'Selecionar';
   }
   render() {
@@ -129,146 +132,123 @@ class AddCurso extends React.Component {
         <Container className=" mt--7" fluid>
           {/* Table */}
           <Row>
-          <div className=" col">
+            <div className=" col">
               <Card className=" shadow">
                 <CardHeader className=" bg-transparent">
                   <h3 className=" mb-0">{header}</h3>
                 </CardHeader>
                 <CardBody className="px-lg-5 py-lg-5">
-              <Form role="form">
-                <Row>
-                  <Col>
-                    <Typography>Nome:</Typography>
-                  </Col>
-                  <Col>
-                  </Col>
-                </Row>
-                <Row>
-                <Col xs="9">
-                  <TextField
-                      margin="normal"
-                      variant="outlined"
-                      value={this.state.nome}
-                      onChange={e => this.onChange("nome", e.target.value)}
-                      fullWidth={true}
-                  />
-                  </Col>
-                  <Col>
-                    <UncontrolledDropdown>
-                    <DropdownToggle caret defaultValue="Área do curso">
-                          {this.getName()}
-                    </DropdownToggle>
-                        <DropdownMenu>
-                        {
-                          // POPULATE DROPDOWN
-                          areas && areas!==undefined &&
-                            Object.keys(areas).map((item,index) => {
-                              return (
-                              <DropdownItem key={index} onClick = {() => {this.onChange("selectedItem",areas[item])}}> 
-                              {areas[item].areacurso_nome}
-                              </DropdownItem>
-                              );
-                            })
-                        } 
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
-                </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <Typography>Descrição:</Typography>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <TextField
+                  <Grid container direction="column" spacing={1}>
+                    <Grid container>
+                      <Grid item xs="9">
+                        <Typography>Título:</Typography>
+                      </Grid>
+                      <Grid item>
+                        <Typography>Área do curso:</Typography>
+                      </Grid>
+                    </Grid>
+                    <Grid container spacing={1}>
+                      <Grid item xs="9">
+                        <TextField
+                          margin="normal"
+                          variant="outlined"
+                          value={this.state.titulo}
+                          onChange={e => this.onChange("titulo", e.target.value)}
+                          fullWidth={true}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <UncontrolledDropdown>
+                          <DropdownToggle caret defaultValue="Área do curso">
+                            {this.getName()}
+                          </DropdownToggle>
+                          <DropdownMenu>
+                            {
+                              // POPULATE DROPDOWN
+                              areas && areas !== undefined &&
+                              Object.keys(areas).map((item, index) => {
+                                return (
+                                  <DropdownItem key={index} onClick={() => { this.onChange("selectedItem", areas[item]) }}>
+                                    {areas[item].areacurso_nome}
+                                  </DropdownItem>
+                                );
+                              })
+                            }
+                          </DropdownMenu>
+                        </UncontrolledDropdown>
+                      </Grid>
+                    </Grid>
+                    <Grid item>
+                      <Typography>Subtítulo:</Typography>
+                    </Grid>
+                    <Grid item xs="12" sm>
+                      <TextField
                         margin="normal"
                         variant="outlined"
                         multiline
-                        rowsMax="4"
+                        rows="2"
+                        rowsMax="3"
+                        value={this.state.subtitulo}
+                        onChange={e => this.onChange("subtitulo", e.target.value)}
+                        fullWidth={true}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <Typography>Descrição:</Typography>
+                    </Grid>
+                    <Grid item xs="12" sm>
+                      <TextField
+                        margin="normal"
+                        variant="outlined"
+                        multiline
+                        rows="6"
+                        rowsMax="9"
                         value={this.state.descricao}
                         onChange={e => this.onChange("descricao", e.target.value)}
                         fullWidth={true}
-                    />
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <Typography>Data inicio do curso:</Typography>
-                  </Col>
-                  <Col>
-                    <Typography>Data fim do curso:</Typography>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col xs={6}>
-                      <FormGroup>
-                      <InputGroup className="input-group-alternative">
-                        <InputGroupAddon addonType="prepend">
-                          <InputGroupText>
-                            <i className="ni ni-calendar-grid-58" />
-                          </InputGroupText>
-                        </InputGroupAddon>
-                        <ReactDatetime
-                          inputProps={{
-                            placeholder: "Data inicio do curso                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     x"
-                          }}
-                          timeFormat={false}
-                          dateFormat="DD/MM/YYYY"
-                          value={this.state.dataInicio}
-                          onChange={e => this.onChange("dataInicio", e._d.toLocaleDateString())}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <Typography>Vísivel:</Typography>
+                    </Grid>
+                    <Grid item>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={this.state.visivel}
+                            onClick={() => this.onChange('visivel', !this.state.visivel)}
+                            color="primary"
+                          />
+                        }
+                        label="Visível"
+                      />
+                    </Grid>
+                    <Grid item>
+                      <Typography>Selecione a imagem de capa:</Typography>
+                    </Grid>
+                    <Grid item>
+                      <FormGroup className="mb-3">
+                        <CustomInput
+                          id="fileInput"
+                          type="file"
+                          label={this.getFileLabel()}
+                          onChange={() => { this.handleFile() }}
                         />
-                      </InputGroup>
-                    </FormGroup>
-                  </Col>
-                  <Col xs={6}>
-                      <FormGroup>
-                      <InputGroup className="input-group-alternative">
-                        <InputGroupAddon addonType="prepend">
-                          <InputGroupText>
-                            <i className="ni ni-calendar-grid-58" />
-                          </InputGroupText>
-                        </InputGroupAddon>
-                        <ReactDatetime
-                          inputProps={{
-                            placeholder: "Data final do curso"
-                          }}
-                          timeFormat={false}
-                          dateFormat="DD/MM/YYYY"
-                          value={this.state.dataFim}
-                          onChange={e => this.onChange("dataFim", e._d.toLocaleDateString())}
-                        />
-                      </InputGroup>
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <Typography> Selecione a imagem de capa:</Typography>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                  <FormGroup className="mb-3">
-                    <CustomInput
-                      id="fileInput"
-                      type="file"
-                      label={this.getFileLabel()}
-                      onChange={() => {this.handleFile()}}
-                    />
-                </FormGroup>
-                </Col>
-                </Row>
-                  {this.getImg()}
+                      </FormGroup>
+                    </Grid>
+                    <Grid item>
+                      {this.getImg()}
+                    </Grid>
+                  </Grid>
                   <Grid container justify="center" spacing={3}>
                     <Grid item>
-                    <Link to='/admin/cursos'>
-                      <Button className="my-4"
+                      <Link to='/admin/cursos'>
+                        <Button className="my-4"
                           color="primary"
                           type="button"
-                      >
+                        >
                           Voltar
-                      </Button>
+                    </Button>
                       </Link>
                     </Grid>
                     <Grid item>
@@ -277,37 +257,46 @@ class AddCurso extends React.Component {
                         color="primary"
                         type="button"
                         onClick={() => {
-                          if(this.state.id) {
-                            updateCurso(
-                              this.state.id,
-                              this.state.nome,
-                              this.state.descricao,
-                              this.state.selectedItem.areacurso_cod,
-                              this.state.dataInicio,
-                              this.state.dataFim,
-                              this.state.file,
-                              this.state.prevFile
-                            )
-                          }
+                          if (this.state.titulo === "")
+                            alert('Digite um título para o curso!');
+                          if (this.state.subtitulo === "")
+                            alert('Digite um subtítulo para o curso!');
+                          else if (this.state.descricao === "")
+                            alert('Digite uma descrição para o curso!');
+                          else if (this.state.selectedItem === null)
+                              alert('Selecione uma área para o curso!');
                           else {
-                            addCurso(
-                              this.state.nome,
-                              this.state.descricao,
-                              this.state.selectedItem.areacurso_cod,
-                              this.state.dataInicio,
-                              this.state.dataFim,
-                              this.state.file,
-                            )
+                            if (this.state.id) {
+                              updateCurso(
+                                this.state.id,
+                                this.state.titulo,
+                                this.state.subtitulo,
+                                this.state.descricao,
+                                this.state.selectedItem.areacurso_cod,
+                                this.state.visivel,
+                                this.state.file,
+                                this.state.prevFile
+                              )
+                            }
+                            else {
+                              addCurso(
+                                this.state.titulo,
+                                this.state.subtitulo,
+                                this.state.descricao,
+                                this.state.selectedItem.areacurso_cod,
+                                this.state.visivel,
+                                this.state.file,
+                              )
+                            }
                           }
                         }}
                       >
                         Salvar
-                      </Button>
+                    </Button>
                     </Grid>
                   </Grid>
-              </Form>
-            </CardBody>
-            </Card> 
+                </CardBody>
+              </Card>
             </div>
           </Row>
         </Container>
