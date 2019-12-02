@@ -2,7 +2,6 @@ import firebase from "firebaseConfig";
 import {getUserPermissions} from "services/superadmService.js"; 
 
 const loginAction = (email, password) => async dispatch => {
-  console.log('logamos',email,password);
   firebase
     .auth()
     .signInWithEmailAndPassword(email, password)

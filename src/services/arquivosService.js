@@ -191,7 +191,7 @@ export const mudarVisibilidade = (id,value) => {
     arquivo_visivel: value
   })
   .then(() => {
-    return 
+    alert('Visibilidade do arquivo alterada com sucesso!');
   })
   .catch(function(error){
     alert("Erro ao mudar visilidade do arquivo! Erro: " + error);

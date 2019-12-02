@@ -18,7 +18,8 @@ import AddArquivo from "views/arquivos/AddArquivo.jsx";
 
 import CursosUSER from "views/cursos/cursosUSER.jsx";
 import AddVideoAula from "views/cursos/addVideoAula.jsx";
-import InscricaoCurso from "views/cursos/InscricaoCurso.jsx";
+import VisualizarCurso from "views/cursos/VisualizarCurso.jsx";
+import VisualizarVideo from "views/cursos/VisualizarVideo.jsx";
 
 import AbrirTicket from "views/tickets/AbrirTicket.jsx";
 import TicketsUSER from "views/tickets/TicketsUser.jsx";
@@ -172,9 +173,16 @@ var routes = [
     sidebar: false
   },
   {
-    path: "/inscricao-curso",
-    name: "Realizar inscrição em curso",
-    component: InscricaoCurso,
+    path: "/visualizar-video",
+    name: "Visualizar vídeo",
+    component: VisualizarVideo,
+    layout: "/admin",
+    sidebar: false
+  },
+  {
+    path: "/visualizar-curso",
+    name: "Visualizar curso",
+    component: VisualizarCurso,
     layout: "/admin",
     sidebar: false
   },

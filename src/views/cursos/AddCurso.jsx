@@ -45,7 +45,7 @@ class AddCurso extends React.Component {
     areas: [],
     selectedItem: null,
     file: null,
-    prevFile: null,
+    dbFile: null,
     visivel: true
   };
 
@@ -71,7 +71,7 @@ class AddCurso extends React.Component {
       const responseImg = getImgCurso(this.props.location.state.id);
       responseImg.then((img) => {
         if (img)
-          this.onChange("prevFile", img);
+          this.onChange("dbFile", img);
       });
 
       this.setState({
@@ -109,9 +109,9 @@ class AddCurso extends React.Component {
 
   getImg = () => {
     if (this.state.file)
-      return <img src={URL.createObjectURL(this.state.file)} height={360} width={480} />
-    else if (this.state.prevFile)
-      return <img src={this.state.prevFile} height={360} width={480} />
+      return <img src={URL.createObjectURL(this.state.file)} height={360} width={240} />
+    else if (this.state.dbFile)
+      return <img src={this.state.dbFile} height={360} width={240} />
     else
       return
   }
@@ -275,7 +275,7 @@ class AddCurso extends React.Component {
                                 this.state.selectedItem.areacurso_cod,
                                 this.state.visivel,
                                 this.state.file,
-                                this.state.prevFile
+                                this.state.dbFile
                               )
                             }
                             else {

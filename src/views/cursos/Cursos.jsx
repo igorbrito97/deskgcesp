@@ -1,7 +1,7 @@
 import React from "react";
 import {Link} from "react-router-dom";
 import { connect } from "react-redux";
-import {getAllCursos,deleteCurso,getAllAreaCursos} from "services/cursosService";
+import {getAllCursos,deleteCurso,getAllAreaCursos,mudarVisibilidade,getImgCurso} from "services/cursosService";
 // reactstrap components
 import {
   Button,
@@ -52,15 +52,28 @@ class Cursos extends React.Component {
       if(this.props.authState && this.props.authState.permissions) {
           this.onChange("userPermissions",this.props.authState.permissions);
       }
-
       const responseCurso = getAllCursos();
       const responseArea = getAllAreaCursos();
-      responseCurso.then((cursos) => {
-        this.onChange("cursos",cursos);
-      });
       responseArea.then((areas) => {
         this.onChange("areas",areas);
       })
+      responseCurso.then((cursos) => {
+        this.onChange("cursos",cursos);
+        Object.keys(cursos).map((item) => {
+            const responseImg = getImgCurso(cursos[item].curso_cod);
+            responseImg.then((url) => {
+                if(url)
+                  cursos[item].img = url;
+                else
+                  cursos[item].img = ""; //se nao tiver adiciona um faker (?)
+
+              this.onChange("cursos",cursos);
+            })
+            .catch(function(error){
+              console.log('nao encontrou imagem');
+            })
+        });
+      });
     };
 
     getLinkAlterar() {
@@ -82,30 +95,45 @@ class Cursos extends React.Component {
       };
     }
 
-    getLinkAddVideoAula() {
-      if(this.state.selectedItem) {
-        return {
-          pathname: '/admin/add-videoaula', state:{
-            id: this.state.selectedItem.curso_cod,
-            titulo: this.state.selectedItem.curso_titulo,
-            subtitulo: this.state.selectedItem.curso_subtitulo,
-            descricao: this.state.selectedItem.curso_descricao,
-            dataInicio: this.state.selectedItem.curso_dataInicio,
-            dataFim: this.state.selectedItem.curso_dataFim
-        }};
-      }
-      else
+  getLinkAddVideoAula() {
+    if(this.state.selectedItem) {
       return {
-        pathname: '/admin/cursos'
-      };
+        pathname: '/admin/add-videoaula', state:{
+          id: this.state.selectedItem.curso_cod,
+          titulo: this.state.selectedItem.curso_titulo,
+          subtitulo: this.state.selectedItem.curso_subtitulo,
+          descricao: this.state.selectedItem.curso_descricao,
+          dataInicio: this.state.selectedItem.curso_dataInicio,
+          dataFim: this.state.selectedItem.curso_dataFim
+      }};
     }
+    else
+    return {
+      pathname: '/admin/cursos'
+    };
+  }
 
-    getName() {
-      if(this.state.selectedItem) 
-        return this.state.selectedItem.curso_titulo;
-      else
-        return '';
-    }
+  getLinkVisualizar(curso) {
+    return {
+      pathname: '/admin/visualizar-curso', state:{
+        id: curso.curso_cod,
+        titulo:curso.curso_titulo,
+        subtitulo:curso.curso_subtitulo,
+        descricao: curso.curso_descricao,
+        idArea: curso.areacurso_cod,
+        visivel: curso.curso_visivel,
+        img: curso.img,
+      }
+  };
+  }
+
+  getName() {
+    if(this.state.selectedItem) 
+      return this.state.selectedItem.curso_titulo;
+    else
+      return '';
+  }
+  
     
     
   render() {
@@ -156,7 +184,7 @@ class Cursos extends React.Component {
                     </tr>
                   </thead>
                   <tbody>
-                    {// we first verify if the statCardState is undefined
+                    {
                 
                 cursos && cursos!==undefined &&
                 Object.keys(cursos).map((item,index) => {
@@ -171,7 +199,7 @@ class Cursos extends React.Component {
                    return (
                       <tr key={index} id="rowCurso">
                        <td> 
-                           {cursos[item].curso_titulo}
+                        {cursos[item].curso_titulo}
                        </td>
                        <td>
                          {cursos[item].areacurso_nome}
@@ -180,9 +208,11 @@ class Cursos extends React.Component {
                          {cursos[item].curso_visivel ? 'Sim' : 'Não'}
                        </td>
                        <td>
-                        <Button color="primary" type="button"> 
-                          Visualizar 
-                        </Button>
+                        <Link to={this.getLinkVisualizar(cursos[item])}>
+                          <Button color="primary" type="button"> 
+                            Visualizar 
+                          </Button>
+                        </Link>
                        </td>
                        <PermissibleRender
                         userPermissions={userPermissions ? userPermissions : []}
@@ -202,12 +232,20 @@ class Cursos extends React.Component {
                               <i className="fas fa-ellipsis-v" />
                             </DropdownToggle>
                             <DropdownMenu className="dropdown-menu-arrow" right>
-                            <Link  to={this.getLinkAddVideoAula()} >
-                                  <DropdownItem
-                                    href="#pablo">
-                                    Adicionar video aula
-                                  </DropdownItem>
-                                </Link>
+                              <Link  to={this.getLinkAddVideoAula()} >
+                                <DropdownItem
+                                  href="#pablo">
+                                  Adicionar video aula
+                                </DropdownItem>
+                              </Link>
+                              <DropdownItem
+                                onClick={() => {
+                                  mudarVisibilidade(this.state.selectedItem.curso_cod,!this.state.selectedItem.curso_visivel);
+                                  //refresh -> window.location.reload(false); => funciona mas nao mantem logado, por enquanto gambi
+                                }}
+                              >
+                                {cursos[item].curso_visivel ? "Tornar invisível" : "Tornar visível"}
+                                </DropdownItem>
                               <Link  to={this.getLinkAlterar()} >
                                   <DropdownItem
                                     href="#pablo">

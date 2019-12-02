@@ -10,12 +10,13 @@ class MultilineText extends React.Component {
 
   constructor(props){
     super(props);
-  }
-
-  componentDidMount() {
-    this.setState({
-      text: this.props.text
-    })
+    if(props.text){
+      this.setState({
+        text: props.text,
+        variant: props.variant ? props.variant : "b1",
+        align: props.align ? props.align : "inherit"
+      })
+    }
   }
   
   componentDidUpdate(prevProps) {
@@ -32,7 +33,7 @@ class MultilineText extends React.Component {
 
   render() {
     const {text,variant,align} = this.state;
-    console.log("text",text,'varia',variant);
+    // console.log('text','variant','align',text,variant,align);
     return (
         String(text).split("\n").map(line => {
             return <Typography variant={variant} align={align}>{line}</Typography>

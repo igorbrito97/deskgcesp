@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom" 
 import { connect } from "react-redux";
-import {} from "services/cursosService";
+import {addVideo,getVideoAulasCurso,updateVideo,deleteVideo} from "services/cursosService";
 import {
     Button,
     Card,
@@ -11,7 +11,12 @@ import {
     Col,
     CustomInput,
     FormGroup,
-    Form,
+    DropdownMenu,
+    DropdownItem,
+    UncontrolledDropdown,
+    DropdownToggle,
+    Modal,
+    Table,
     Row,
   } from "reactstrap";
   import {
@@ -30,9 +35,13 @@ class addVideoAula extends React.Component {
         subtitulo: "",
         visivel: Boolean,
         descricao: "",
+        idAula: "",
         tituloAula : "",
         descricaoAula: "",
-        file: null
+        file: null,
+        videos: [],
+        deleteModal: false,
+        selectedItem: null
     };
 
     onChange = (myState,value) => {
@@ -42,22 +51,44 @@ class addVideoAula extends React.Component {
     };
 
     componentDidMount = () => {
-      console.log('porpi',this.props);
-        if(this.props.location.state && this.props.location.state.id){
-            this.setState({
-                id: this.props.location.state.id,
-                titulo: this.props.location.state.titulo,
-                subtitulo: this.props.location.state.subtitulo,
-                descricao: this.props.location.state.descricao,
-                visivel: this.props.location.state.visivel,
-            })
-        }
+      if(this.props.location.state && this.props.location.state.id){
+        this.setState({
+            id: this.props.location.state.id,
+            titulo: this.props.location.state.titulo,
+            subtitulo: this.props.location.state.subtitulo,
+            descricao: this.props.location.state.descricao,
+            visivel: this.props.location.state.visivel,
+        })
+        const responseVideos = getVideoAulasCurso(this.props.location.state.id);
+        responseVideos.then(videos => {
+          if(videos)
+            this.onChange('videos',videos);
+        })
+        .catch(function(error) {
+
+        })
+      }
     }
+
+    resetPage = () => {
+      this.setState({
+        idAula: "",
+        tituloAula: "",
+        descricaoAula: "",
+        file: null
+      })
+    }
+
+    toggleModal = state => {
+      this.setState({
+        [state]: !this.state[state]
+      });
+    };
 
     handleFile() {
       const file = document.getElementById('fileInput').files[0];
       if (file)
-        this.onChange("arquivo", file);
+        this.onChange("file", file);
     }
 
     getFileLabel() {
@@ -68,7 +99,7 @@ class addVideoAula extends React.Component {
     }
     
     render() {
-      console.log('state',this.state);
+      const {videos} = this.state;
         return (
             <>
             <Header />
@@ -95,6 +126,183 @@ class addVideoAula extends React.Component {
                       </Grid>
                       <br/>
                       <Divider/>
+                      <br/>
+                      <Typography align="center" variant="h5">Conteúdo do curso:</Typography>
+                      <Table className="align-items-center table-flush" responsive>
+                        <thead className="thead-light">
+                          <tr>
+                            <th scope="col">Título</th>
+                            <th scope="col">Duração</th>
+                            <th scope="col" />
+                            <th scope="col" />
+                          </tr>
+                        </thead>
+                        <tbody>
+                        {
+                          videos && videos!== null && 
+                          Object.keys(videos).map((item,index) => {
+                            //console.log('vidddd',item,videos[item],videos[item].video_cod,videos[item].video_descricao,videos[item].video_titulo);
+                            return (
+                              <tr key={index}>
+                                <td>
+                                  {videos[item].video_titulo}
+                                </td>
+                                <td>
+                                  -
+                                </td>
+                                <td>
+                                  <Link to={{pathname: '/admin/visualizar-video',state:{
+                                    idCurso: this.state.id,
+                                    tituloCurso: this.state.titulo,
+                                    videoAula: videos[item],
+                                    path: '/admin/add-videoaula'
+                                  }}}>
+                                    <Button
+                                      outline
+                                      className="my-4"
+                                      color="primary"   
+                                      type="button"
+                                      size="sm"
+                                    >
+                                        Visualizar
+                                    </Button>
+                                  </Link>
+                                </td>
+                                <td className="text-right"> 
+                                  <UncontrolledDropdown onClick={() => this.onChange("selectedItem",videos[item])}>
+                                    <DropdownToggle
+                                      className="btn-icon-only text-light"
+                                      href="#pablo"
+                                      role="button"
+                                      size="sm"
+                                      color=""
+                                      onClick={e => e.preventDefault()}
+                                    >
+                                      <i className="fas fa-ellipsis-v" />
+                                    </DropdownToggle>
+                                    <DropdownMenu className="dropdown-menu-arrow" right>
+                                      <DropdownItem
+                                        href="#pablo"
+                                        onClick={() => {
+                                          if(this.state.tituloAula !== "" || this.state.descricaoAula !== "") {
+                                            this.toggleModal("updateModal");
+                                          }
+                                          else {
+                                            this.setState({
+                                              idAula: this.state.selectedItem.video_cod,
+                                              tituloAula: this.state.selectedItem.video_titulo,
+                                              descricaoAula: this.state.selectedItem.video_descricao
+                                            })
+                                          }
+                                        }}
+                                      >
+                                        Alterar
+                                      </DropdownItem>
+                                      <Modal
+                                        className="modal-dialog-centered"
+                                        isOpen={this.state.updateModal}
+                                        toggle={() => this.toggleModal("updateModal")}
+                                      >
+                                        <div className="modal-header">
+                                          <h5 className="modal-title" id="updateModalLabel">
+                                            Atenção!!
+                                          </h5>
+                                          <button
+                                            aria-label="Close"
+                                            className="close"
+                                            data-dismiss="modal"
+                                            type="button"
+                                            onClick={() => this.toggleModal("updateModal")}
+                                          >
+                                            <span aria-hidden={true}>×</span>
+                                          </button>
+                                        </div>
+                                        <div className="modal-body">Para alterar essa vídeo você perderá a atual. Deseja continuar? </div>
+                                        <div className="modal-footer">
+                                          <Button
+                                            color="secondary"
+                                            data-dismiss="modal"
+                                            type="button"
+                                            onClick={() => this.toggleModal("updateModal")}
+                                          >
+                                            Cancelar
+                                          </Button>
+                                          <Button color="primary" type="button" 
+                                          onClick={() => {
+                                            this.setState({
+                                              idAula: this.state.selectedItem.video_cod,
+                                              tituloAula: this.state.selectedItem.video_titulo,
+                                              descricaoAula: this.state.selectedItem.video_descricao
+                                            })
+                                            this.toggleModal("updateModal")}}
+                                            > 
+                                            Confirmar
+                                          </Button>
+                                        </div>
+                                      </Modal>
+                                      <DropdownItem
+                                        href="#pablo"
+                                        onClick={e => {this.toggleModal("deleteModal")}}
+                                      >
+                                        Excluir
+                                      </DropdownItem>
+                                      <Modal
+                                        className="modal-dialog-centered"
+                                        isOpen={this.state.deleteModal}
+                                        toggle={() => this.toggleModal("deleteModal")}
+                                      >
+                                        <div className="modal-header">
+                                          <h5 className="modal-title" id="deleteModalLabel">
+                                            Atenção!!
+                                          </h5>
+                                          <button
+                                            aria-label="Close"
+                                            className="close"
+                                            data-dismiss="modal"
+                                            type="button"
+                                            onClick={() => this.toggleModal("deleteModal")}
+                                          >
+                                            <span aria-hidden={true}>×</span>
+                                          </button>
+                                        </div>
+                                        <div className="modal-body">Deseja confirmar exlusão da video aula {this.state.selectedItem ? this.state.selectedItem.video_titulo : null}?</div>
+                                        <div className="modal-footer">
+                                          <Button
+                                            color="secondary"
+                                            data-dismiss="modal"
+                                            type="button"
+                                            onClick={() => this.toggleModal("deleteModal")}
+                                          >
+                                            Cancelar
+                                          </Button>
+                                          <Button color="primary" type="button" 
+                                          onClick={() => {
+                                            deleteVideo(this.state.id,this.state.selectedItem.video_cod);
+                                            this.toggleModal("deleteModal")}}
+                                            > 
+                                            Confirmar
+                                          </Button>
+                                        </div>
+                                      </Modal>
+                                    </DropdownMenu>
+                                  </UncontrolledDropdown>
+                                </td>
+                              </tr>
+                            );
+                          }) 
+                        }
+                        </tbody>
+                      </Table>
+                      <Divider/>
+                      <br/>
+                      {
+                        this.state.idAula !== "" &&
+                        <Row>
+                          <Col>
+                            <Typography align="center">Alterando vídeo aula: {this.state.selectedItem.video_titulo}</Typography>
+                          </Col>
+                        </Row>
+                      }
                       <Row>
                         <Col>
                           <Typography>Título da video aula: </Typography>
@@ -122,7 +330,8 @@ class addVideoAula extends React.Component {
                             margin="normal"
                             variant="outlined"
                             multiline
-                            rowsMax="4"
+                            rows="4"
+                            rowsMax="6"
                             value={this.state.descricaoAula}
                             onChange={e => this.onChange("descricaoAula", e.target.value)}
                             fullWidth={true}
@@ -158,12 +367,48 @@ class addVideoAula extends React.Component {
                             </Button>
                           </Link>
                         </Grid>
+                        {
+                          this.state.idAula !== "" &&
+                          <Grid item>
+                            <Button
+                              className="my-4"
+                              color="primary"
+                              type="button"
+                              onClick={() => {
+                                this.setState({
+                                  idAula: "",
+                                  tituloAula: "",
+                                  descricaoAula: ""
+                                })
+                              }}
+                            >
+                              Cancelar alteração
+                            </Button>
+                          </Grid>
+                        }
                         <Grid item>
                           <Button
                             className="my-4"
                             color="primary"
                             type="button"
-                            onClick={() => {}}
+                            onClick={() => {
+                              if(this.state.tituloAula === "")
+                                alert('Digite o título da vídeo aula!');
+                              else if(this.state.descricaoAula === "")
+                                alert('Digite a descrição da vídeo aula!');
+                              else if(this.state.file === null)
+                                alert('Selecione o arquivo');
+                              else {
+                                if(this.state.idAula){//alterando
+                                  updateVideo(this.state.id,this.state.idAula,this.state.tituloAula,this.state.descricaoAula,this.state.file);
+                                  this.resetPage();
+                                }
+                                else {//adicionando
+                                  addVideo(this.state.id,this.state.tituloAula,this.state.descricaoAula,this.state.file);
+                                  this.resetPage();
+                                }
+                              }
+                            }}
                           >
                             Salvar
                           </Button>
