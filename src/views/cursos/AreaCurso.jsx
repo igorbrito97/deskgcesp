@@ -207,7 +207,7 @@ class AreaCurso extends React.Component {
                         return (
                           <tr key={index}>
                             <td>
-                              {areas[item].areacurso_nome}
+                              <Typography>{areas[item].areacurso_nome}</Typography>
                             </td>
                             <td>
                               <MultilineText text={areas[item].areacurso_descricao} />

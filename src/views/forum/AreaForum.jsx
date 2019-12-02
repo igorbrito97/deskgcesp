@@ -206,7 +206,7 @@ class AreaForum extends React.Component {
                         return (
                           <tr key={index}>
                             <td>
-                              {areas[item].areaforum_nome}
+                              <Typography>{areas[item].areaforum_nome}</Typography>
                             </td>
                             <td>
                               <MultilineText text={areas[item].areaforum_descricao} />

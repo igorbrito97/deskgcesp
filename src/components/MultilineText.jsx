@@ -1,25 +1,19 @@
 import React from 'react';
+import { connect } from "react-redux";
 import Typography from '@material-ui/core/Typography';
 
 class MultilineText extends React.Component {
-  state = {
-      text: "",
-      variant: "",
-      align: "",
-  }
-
   constructor(props){
     super(props);
-    if(props.text){
-      this.setState({
-        text: props.text,
-        variant: props.variant ? props.variant : "b1",
-        align: props.align ? props.align : "inherit"
-      })
+    this.state = {
+      text: props.text,
+      variant: props.variant ? props.variant : "b1",
+      align: props.align ? props.align : "inherit"
     }
   }
   
   componentDidUpdate(prevProps) {
+    console.log('update-prevProps',prevProps,this.props)
     if(prevProps.text !== this.props.text) {
       if(this.props.text){
         this.setState({
@@ -33,7 +27,7 @@ class MultilineText extends React.Component {
 
   render() {
     const {text,variant,align} = this.state;
-    // console.log('text','variant','align',text,variant,align);
+    console.log('state',this.state);
     return (
         String(text).split("\n").map(line => {
             return <Typography variant={variant} align={align}>{line}</Typography>
@@ -43,4 +37,7 @@ class MultilineText extends React.Component {
   
 }
 
-export default MultilineText;
+const mapStateToProps = (state) => ({
+  ...state
+});
+export default connect(mapStateToProps)(MultilineText);
