@@ -100,6 +100,7 @@ class addVideoAula extends React.Component {
     
     render() {
       const {videos} = this.state;
+      console.log('statiVIDIS',this.state);
         return (
             <>
             <Header />

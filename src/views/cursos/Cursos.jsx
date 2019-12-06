@@ -103,8 +103,7 @@ class Cursos extends React.Component {
           titulo: this.state.selectedItem.curso_titulo,
           subtitulo: this.state.selectedItem.curso_subtitulo,
           descricao: this.state.selectedItem.curso_descricao,
-          dataInicio: this.state.selectedItem.curso_dataInicio,
-          dataFim: this.state.selectedItem.curso_dataFim
+          visivel: this.state.selectedItem.curso_visivel
       }};
     }
     else

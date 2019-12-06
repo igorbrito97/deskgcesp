@@ -85,7 +85,7 @@ class VisualizarCurso extends React.Component {
     }
 
     getData() {
-        return new Date().getDate() + '/' + new Date().getMonth() + '/' + new Date().getFullYear();
+        return new Date().getDate() + '/' + (new Date().getMonth()+1) + '/' + new Date().getFullYear();
     }
     
     render() {

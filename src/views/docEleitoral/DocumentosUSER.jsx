@@ -241,7 +241,7 @@ class DocumentosUSER extends React.Component {
                           this.onChange('selectedItem',doc[item]);
                           this.toggleModal("deleteModal")
                           }}>
-                          Deletar
+                          Excluir
                         </Button>
                         <Modal
                           className="modal-dialog-centered"

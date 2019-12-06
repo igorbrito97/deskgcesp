@@ -152,7 +152,7 @@ class ChevalierUSER extends React.Component {
                           this.onChange('selectedItem',indicacoes[item]);
                           this.toggleModal("deleteModal")
                           }}>
-                        Deletar indicação
+                        Excluir
                       </Button>
                       <Modal
                         className="modal-dialog-centered"

@@ -10,7 +10,8 @@ import {
   getRegsIntCapitulo,
   getIndicacoes,
   getIndicacoesByCap,
-  getDownloads
+  getDownloads,
+  getInscritos
 } from "services/reportService";
 import {
   Container,
@@ -30,6 +31,7 @@ import {
   Grid,
   Typography,
   TextField,
+  Paper,
   Divider
 } from "@material-ui/core";
 import PrintIcon from '@material-ui/icons/Print';
@@ -39,38 +41,52 @@ const reports = [
   {
     value: 'topicoArea',
     label: 'Tópicos criados por área',
-    columns: ['Nome da área','Quantidade de tópicos']
+    columns: ['Nome da área','Quantidade de tópicos'],
+    dropdownCap: false,
+    filterLabel: ''
   },
   {
     value: 'ticketArea',
     label: 'Tickets enviados por área',
-    columns: ['Nome da área','Quantidade de tickets']
+    columns: ['Nome da área','Quantidade de tickets'],
+    dropdownCap: false,
+    filterLabel: ''
   },
   {
     value: 'docEleitoralCap',
     label: 'Documento Eleitoral por capítulo',
-    columns: ['Capítulo','Cidade','Documentos enviados']
+    columns: ['Capítulo','Cidade','Documentos enviados'],
+    dropdownCap: true,
+    filterLabel: ''
   },
   {
     value: 'regInternoCap',
     label: 'Regimento Interno por capítulo',
-    columns: ['Capítulo','Cidade','Regimentos enviados','Aprovado']
+    columns: ['Capítulo','Cidade','Regimentos enviados','Aprovado'],
+    dropdownCap: true,
+    filterLabel: ''
   },
   {
     value: 'chevalierCap',
     label: 'Chaveliers Indicados',
     columns: ['Nome indicado', 'Capítulo', 'Data envio', 'Status'],
-    dropdownCap: true
+    dropdownCap: true,
+    filterLabel: 'Nome indicado'
   },
   {
     value: 'downloads',
     label: 'Arquivos baixados',
-    columns: ['Nome','Quantidade de downloads']
+    columns: ['Nome','Quantidade de downloads'],
+    dropdownCap: false,
+    filterLabel: 'Nome arquivo'
+  },
+  {
+    value: 'curso',
+    label: 'Inscritos em cursos',
+    dropdownCap: false,
+    columns: ['Título do curso','Status','Inscritos'],
+    filterLabel: 'Título curso'
   }
-  // {
-  //   value: 'curso',
-  //   label: 'Inscritos em cursos'
-  // }
 ]
 
 class Relatorios extends React.Component {
@@ -82,7 +98,6 @@ class Relatorios extends React.Component {
     selectedCap: null,
     disabledDropdown: true,
     disabledOrdering: true,
-    disabledFilter: true,
     tableData: null
   };
 
@@ -108,10 +123,6 @@ class Relatorios extends React.Component {
         this.onChange('capitulos', caps);
     });
   };
-
-  // getData() {
-  //   return new Date().getDate() + '/' + (new Date().getMonth()+1) + '/' + new Date().getFullYear() + ' às ' + new Date().getHours() + ':' + new Date().getMinutes();
-  // }
 
   search() {
     const { selectedReport,searchedReport } = this.state;
@@ -194,6 +205,16 @@ class Relatorios extends React.Component {
           })
         })
         break;
+
+      case 'curso':
+        const responseCursos = getInscritos();
+        responseCursos.then(cursos => {
+          this.setState({
+            searchedReport: selectedReport,
+            tableData: cursos
+          })
+        })
+        break;
     }
   }
 
@@ -251,8 +272,16 @@ class Relatorios extends React.Component {
             <th scope="col">Nome</th>
             <th scope="col">Quantidade de downloads</th>
           </tr>
-        )
+        );
 
+      case 'curso': 
+        return (
+          <tr>
+            <th scope="col">Título do curso</th>
+            <th scope="col">Status</th>
+            <th scope="col">Inscritos</th>
+          </tr>
+        )
     }
     
   }
@@ -343,13 +372,29 @@ class Relatorios extends React.Component {
               {dataRow.downloaded}
             </td>
           </tr>
-        )
+        );
+      
+      case 'curso':
+        return (
+          <tr key={index}>
+            <td>
+              {dataRow.titulo}
+            </td>
+            <td>
+              {dataRow.status}
+            </td>
+            <td>
+              {dataRow.inscritos}
+            </td>
+          </tr>
+        );
     }
   }
 
   render() {
-    const { capitulos, disabledDropdown, disabledFilter, searchedReport,tableData } = this.state;
-    return (
+    const { capitulos, disabledDropdown, disabledOrdering, searchedReport, tableData } = this.state;
+    console.log('selectRepo',this.state.selectedReport);
+    return (  
       <>
         <Header />
         {/* Page content */}
@@ -358,154 +403,166 @@ class Relatorios extends React.Component {
             <div className="col">
               <Card className="shadow">
                 <CardHeader className="border-0">
-                  <Grid container spacing={3} alignContent="center" alignItems="center">
-                    <Grid item>
-                      <Typography>Escolha o tipo de relatório: </Typography>
-                    </Grid>
-                    <Grid item>
-                      <UncontrolledDropdown>
-                        <DropdownToggle caret>
-                          {this.state.selectedReport ? this.state.selectedReport.label : "Relatório"}
-                        </DropdownToggle>
-                        <DropdownMenu >
-                          {
-                            reports.map((option, index) => {
-                              return (
-                                <DropdownItem key={index} onClick={() => {
-                                  this.onChange("selectedReport", option);
-                                  if(this.state.selectedCap!==null)
-                                    this.onChange("selectedCap",null);
-                                  if(option.dropdownCap) 
-                                    this.onChange('disabledDropdown',false);
-                                  else if(this.state.disabledDropdown === false)
-                                    this.onChange('disabledDropdown',true);
-                                  
-                                }}>
-                                  {option.label}
-                                </DropdownItem>
-                              );
-                            })
-
-                          }
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
-                    </Grid>
-                    <Grid item>
-                      <Typography>Capítulo:</Typography>
-                    </Grid>
-                    <Grid item>
-                      <UncontrolledDropdown>
-                        <DropdownToggle caret disabled={disabledDropdown}>
-                          {this.state.selectedCap ? this.state.selectedCap.cap_nome + ' n° ' + this.state.selectedCap.cap_numero : 'Capítulo'}
-                        </DropdownToggle>
-                        <DropdownMenu>
-                          {
-                            capitulos && capitulos !== null &&
-                            Object.keys(capitulos).map((item, index) => {
-                              return (
-                                <DropdownItem key={index} onClick={() => { this.onChange("selectedCap", capitulos[item]) }}>
-                                  {capitulos[item].cap_nome} n° {capitulos[item].cap_numero}
-                                </DropdownItem>
-                              );
-                            })
-                          }
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
-                    </Grid>
-                    {/* <Grid item>
-                      <Typography>Ordenar por:</Typography>
-                    </Grid>
-                    <Grid item>
-                      <UncontrolledDropdown>  
-                        <DropdownToggle caret disabled={disabledDropdown}>
-                            {}
-                        </DropdownToggle>
-                        <DropdownMenu>
-                            {
-                              disabledOrdering === true && 
-                              Object.keys(capitulos).map((item, index) => {
+                  <Paper style={{borderStyle: 'solid 1.5px'}}>
+                    <br/>
+                    <Grid container direction="column" spacing={4}>
+                      <Grid container spacing={3} justify="center">
+                        <Grid item>
+                          <Typography>Escolha o tipo de relatório: </Typography>
+                        </Grid>
+                        <Grid item>
+                          <UncontrolledDropdown>
+                            <DropdownToggle caret>
+                              {this.state.selectedReport ? this.state.selectedReport.label : "Relatório"}
+                            </DropdownToggle>
+                            <DropdownMenu >
+                              {
+                                reports.map((option, index) => {
                                   return (
-                                  <DropdownItem key={index} onClick={() => { this.onChange("selectedCap", capitulos[item]) }}>
-                                      {capitulos[item].cap_nome} n° {capitulos[item].cap_numero}
-                                  </DropdownItem>
+                                    <DropdownItem key={index} onClick={() => {
+                                      this.onChange("selectedReport", option);
+                                      if(this.state.selectedCap!==null)
+                                        this.onChange("selectedCap",null);
+                                      if(option.dropdownCap) 
+                                        this.onChange('disabledDropdown',false);
+                                      else if(this.state.disabledDropdown === false)
+                                        this.onChange('disabledDropdown',true);
+                                      
+                                    }}>
+                                      {option.label}
+                                    </DropdownItem>
                                   );
-                              })
-                            }
-                        </DropdownMenu>
-                        </UncontrolledDropdown>
-                    </Grid>
-                    <Grid item>
-                      <Typography>Filtro: </Typography>
-                    </Grid>
-                    <Grid item>
-                      <TextField
-                        disabled={disabledFilter}
-                        variant="outlined"
-                        value={this.state.filter}
-                        onChange={e => this.onChange("filter", e.target.value)}
-                      />
-                    </Grid> */}
-                    <Grid item>
-                      <Button
-                        className="my-4"
-                        color="primary"
-                        type="button"
-                        onClick={() => {
-                          this.search();
-                        }}
-                      >
-                        Buscar
-                      </Button>
-                    </Grid>
-                    {
-                      this.state.searchedReport!==null &&
-                      <Grid item>
-                        <ButtonIcon
-                          variant="contained"
-                          color="secondary"
-                          startIcon={<PrintIcon/>}
-                        >
-                        <PDFDownloadLink
-                          document={<PdfDocument data={tableData} report={searchedReport} />}
-                          fileName="relatorio.pdf"  
-                          style={{
-                            color: "white",
-                          }}
-                        >
-                          {({ blob, url, loading, error }) => 
-                             loading ? "Carregando documento..." : "Gerar arquivo PDF"
-                          }
-                        </PDFDownloadLink>
-                        </ButtonIcon>
+                                })
+
+                              }
+                            </DropdownMenu>
+                          </UncontrolledDropdown>
+                        </Grid>
                       </Grid>
-                    }
-                  </Grid>
-                  <Divider />
+                      <Grid container spacing={3} justify="center" alignItems="center">
+                        <Grid item>
+                            <Typography>Filtro: </Typography>
+                          </Grid>
+                          <Grid item>
+                            <TextField
+                              label={this.state.selectedReport ? this.state.selectedReport.filterLabel : null}
+                              variant="outlined"
+                              value={this.state.filter}
+                              onChange={e => this.onChange("filter", e.target.value)}
+                            />
+                          </Grid>
+                        <Grid item>
+                          <Typography>Capítulo:</Typography>
+                        </Grid>
+                        <Grid item>
+                          <UncontrolledDropdown>
+                            <DropdownToggle caret disabled={disabledDropdown}>
+                              {this.state.selectedCap ? this.state.selectedCap.cap_nome + ' n° ' + this.state.selectedCap.cap_numero : 'Capítulo'}
+                            </DropdownToggle>
+                            <DropdownMenu>
+                              {
+                                capitulos && capitulos !== null &&
+                                Object.keys(capitulos).map((item, index) => {
+                                  return (
+                                    <DropdownItem key={index} onClick={() => { this.onChange("selectedCap", capitulos[item]) }}>
+                                      {capitulos[item].cap_nome} n° {capitulos[item].cap_numero}
+                                    </DropdownItem>
+                                  );
+                                })
+                              }
+                            </DropdownMenu>
+                          </UncontrolledDropdown>
+                        </Grid>
+                        <Grid item>
+                          <Typography>Status:</Typography>
+                        </Grid>
+                        <Grid item>
+                          <UncontrolledDropdown>  
+                            <DropdownToggle caret disabled={disabledDropdown}>
+                                {}
+                            </DropdownToggle>
+                            <DropdownMenu>
+                                {
+                                  disabledOrdering === true && 
+                                  Object.keys(capitulos).map((item, index) => {
+                                      return (
+                                      <DropdownItem key={index} onClick={() => { this.onChange("selectedCap", capitulos[item]) }}>
+                                          {capitulos[item].cap_nome} n° {capitulos[item].cap_numero}
+                                      </DropdownItem>
+                                      );
+                                  })
+                                }
+                            </DropdownMenu>
+                            </UncontrolledDropdown>
+                        </Grid>
+                        <Grid item>
+                            <Button
+                              className="my-4"
+                              color="primary"
+                              type="button"
+                              onClick={() => {
+                                this.search();
+                              }}
+                            >
+                              Buscar
+                            </Button>
+                          </Grid>
+                        {
+                          this.state.searchedReport!==null &&
+                          <Grid item>
+                            <ButtonIcon
+                              variant="contained"
+                              color="secondary"
+                              startIcon={<PrintIcon/>}
+                            >
+                            <PDFDownloadLink
+                              document={<PdfDocument data={tableData} report={searchedReport} />}
+                              fileName="relatorio.pdf"  
+                              style={{
+                                color: "white",
+                              }}
+                            >
+                              {({ blob, url, loading, error }) => 
+                                loading ? "Carregando documento..." : "Gerar arquivo PDF"
+                              }
+                            </PDFDownloadLink>
+                            </ButtonIcon>
+                          </Grid>
+                        }
+                      </Grid>
+                    </Grid>
+                  </Paper>
                 </CardHeader>
                   {
                     searchedReport!== null &&
-                    <Table className="align-items-center table-flush" responsive>
-                      <thead className="thead-light">
-                      {/* {this.getTableHeaders()} */}
-                      <tr>
-                      {
-                        searchedReport.columns.map(item => {
-                          return (
-                            <th scope="col">{item}</th>
-                          )
-                        })
-                      }
-                      </tr>
-                      </thead>
-                      <tbody>
-                      {
-                        tableData!==null && 
-                        Object.keys(tableData).map((item,index) => {
-                          return this.getTableRows(tableData[item],index);
-                        })
-                      }
-                      </tbody>
-                    </Table>  
+                    <div>
+                      <br/>
+                      <Typography variant="h5" align="center">Relatório de {searchedReport.label}</Typography>
+                      <br/>
+                      <Table className="align-items-center table-flush" responsive>
+                        <thead className="thead-light">
+                        {/* {this.getTableHeaders()} */}
+                        <tr>
+                        {
+                          searchedReport.columns.map(item => {
+                            return (
+                              <th scope="col">{item}</th>
+                            )
+                          })
+                        }
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {
+                          tableData!==null && 
+                          Object.keys(tableData).map((item,index) => {
+                            return this.getTableRows(tableData[item],index);
+                          })
+                        }
+                        </tbody>
+                      </Table>  
+                    </div>
+                    
                   }
                 <br/><br/><br/><br/><br/><br/><br/>
               </Card>

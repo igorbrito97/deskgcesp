@@ -198,7 +198,6 @@ export const getDownloads = async () => {
             downloadRef.once('value', snapshot2 => {
                 let downloads = snapshot2.val();
                 Object.keys(arquivos).forEach(item => {
-                    console.log('arq',arquivos[item],'down',downloads[item]);
                     result.push({
                         nome: arquivos[item].arquivo_nome,
                         downloaded: downloads[item]!== undefined ? Object.keys(downloads[item]).length : 0
@@ -210,4 +209,28 @@ export const getDownloads = async () => {
             })
         })
     })
+}
+
+export const getInscritos = async () => {
+    const cursoRef = databaseRef.child('curso');
+    const inscRef = databaseRef.child('inscricao');
+    let result = [];
+    return new Promise(function(resolve,reject){
+        cursoRef.once('value',snapshot1 => {
+            let cursos = snapshot1.val();
+            inscRef.once('value',snapshot2 => {
+                let inscricoes = snapshot2.val();
+                Object.keys(cursos).forEach(item => {
+                    result.push({
+                        titulo: cursos[item].curso_titulo,
+                        status: cursos[item].curso_visivel ? 'Visível' : 'Invisível',
+                        inscritos: inscricoes[item]!== undefined ? Object.keys(inscricoes[item]).length : 0
+                    })
+                })
+                if(result.length > 0)
+                    resolve(result);
+                else reject(null);
+            })
+        })
+    });
 }

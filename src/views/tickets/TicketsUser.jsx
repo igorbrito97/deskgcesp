@@ -128,7 +128,7 @@ class TicketsUSER extends React.Component {
                             this.onChange('selectedItem',tickets[item]);
                             this.toggleModal("deleteModal")
                           }}>
-                            Deletar
+                            Excluir
                         </Button>
                         <Modal
                           className="modal-dialog-centered"

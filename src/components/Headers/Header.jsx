@@ -103,32 +103,6 @@ class Header extends React.Component {
 const mapStateToProps = state => ({
   ...state
 });
-const mapDispatchToProps = dispatch => ({
-  getAllStatCardsAction: () => dispatch(getAllStatCardsAction()),
-  addStatCardAction: (
-    statName,
-    statDescription,
-    statIcon,
-    statIconColor,
-    statFooterIcon,
-    statFooterIconState,
-    statFooterPercentage,
-    statFooterText
-  ) =>
-    dispatch(
-      addStatCardAction(
-        statName,
-        statDescription,
-        statIcon,
-        statIconColor,
-        statFooterIcon,
-        statFooterIconState,
-        statFooterPercentage,
-        statFooterText
-      )
-    )
-});
 export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+  mapStateToProps
 )(Header);

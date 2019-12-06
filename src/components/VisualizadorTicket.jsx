@@ -47,6 +47,7 @@ class VisualizadorTicket extends React.Component{
         this.handleForm.bind(this);
         this.getData.bind(this);
         this.toggleModal.bind(this);
+        this.getFileLabel.bind(this);
     }
 
     componentDidMount() {
@@ -89,6 +90,13 @@ class VisualizadorTicket extends React.Component{
           this.onChange("arquivo",file);
     }
 
+    getFileLabel() {
+        if(this.state.arquivo)
+          return this.state.arquivo.name;
+        else
+          return 'Selecionar';
+    }
+
     handleForm() {
         const form = this.state.showForm;
         this.setState({
@@ -97,7 +105,7 @@ class VisualizadorTicket extends React.Component{
     }
 
     getData() {
-        return new Date().getDate() + '/' + new Date().getMonth() + '/' + new Date().getFullYear();
+        return new Date().getDate() + '/' + (new Date().getMonth()+1) + '/' + new Date().getFullYear();
     }
 
     render(){
@@ -218,6 +226,7 @@ class VisualizadorTicket extends React.Component{
                                 <Col>
                                     <FormGroup className="mb-3">
                                         <CustomInput
+                                        label={this.getFileLabel()}
                                         id="fileInput"
                                         type="file"
                                         required

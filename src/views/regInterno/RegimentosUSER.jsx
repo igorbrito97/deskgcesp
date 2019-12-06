@@ -205,7 +205,7 @@ class RegimentosUSER extends React.Component {
                           this.onChange('selectedItem',reg[item]);
                           this.toggleModal("deleteModal")
                         }}>
-                          Deletar
+                          Excluir
                         </Button>
                         <Modal
                           className="modal-dialog-centered"
