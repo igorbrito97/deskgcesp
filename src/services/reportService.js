@@ -1,9 +1,8 @@
 import firebase from "firebaseConfig";
 const databaseRef = firebase.database().ref();
 
+// TOPICOS
 export const getTopicosArea = async () => {
-    //Nome da area - qntd tópicos - qntd comentários
-    const comentárioRef = databaseRef.child('comentario');
     let array = [];
     return new Promise(function (resolve, reject) {
         const areaRef = databaseRef.child('areaforum');
@@ -16,8 +15,7 @@ export const getTopicosArea = async () => {
                     let qntdTops = topicos[item] !== undefined ? Object.keys(topicos[item]).length : 0;
                     array.push({
                         area: areas[item],
-                        qntdTopicos: qntdTops,
-                        qntdComentarios: 0
+                        qntdTopicos: qntdTops
                     })
                 })
                 if (array.length > 0)
@@ -28,6 +26,33 @@ export const getTopicosArea = async () => {
     });
 }
 
+export const getTopicosAreaByName = async (nome) => {
+    let result = [];
+    const areaRef = databaseRef.child('areaforum').orderByChild('areaforum_nome').startAt(nome).endAt(nome+'\uf8ff');
+    return new Promise(function(resolve,reject){
+        areaRef.once('value',snapshot1 => { 
+            let areas = snapshot1.val();
+            Object.keys(areas).forEach(item => {
+                let topRef = databaseRef.child('topico/'+areas[item].areaforum_cod);
+                topRef.once('value', snapshot2 => {
+                    let topicos = snapshot2.val();
+                    console.log('topsss',topicos)
+                    result.push({
+                        area: areas[item],
+                        qntdTopicos: topicos === null ? 0 : Object.keys(topicos).length
+                    })
+                })
+            })
+            console.log('resut',result.length);
+            if(result.length > 0)
+                resolve(result);
+            else reject(null);
+        })
+    })
+    //quando passa pelo if ele ta com 0, depois ele faz o codigo de cima mas ai ja retornou
+}
+
+//TICKETS
 export const getTicketsArea = async () => {
     let array = [];
     return new Promise(function(resolve,reject) {
@@ -64,85 +89,135 @@ export const getTicketsArea = async () => {
     });
 }
 
-export const getDocsEleCapitulo = async () => {
-    //capitulo - cidade - documento enviados - documento aprovados
+//DOC ELEITORAL
+export const getDocsEle = async () => {
+    //capitulo - cidade - data - status
     let result = [];
     return new Promise(function (resolve, reject) {
-        const capituloRef = databaseRef.child('capitulo');
-        capituloRef.once('value', snapshot1 => {
-            let capitulos = snapshot1.val();
-            var arrayCap = Array(Object.keys(capitulos).length).fill(0);
-            const docRef = databaseRef.child('docEleitoral');
-            docRef.once('value', snapshot2 => {
-                let documentos = snapshot2.val();
-                Object.keys(documentos).forEach(item1 => {
-                    var i = 0;
-                    Object.keys(capitulos).every(item2 => {
-                        if (documentos[item1].capitulo.cap_cod === capitulos[item2].cap_cod) {
-                            arrayCap[i]++;
-                            return false;
-                        }
-                        i++;
-                        return true;
-                    })
+        const docRef = databaseRef.child('docEleitoral');
+        docRef.once('value', snapshot => {
+            let documentos = snapshot.val();
+            Object.keys(documentos).forEach(item => {
+                result.push({
+                    capitulo: documentos[item].capitulo,
+                    data: documentos[item].doc_dataEnvio,
+                    status: documentos[item].doc_status
                 })
-                var i = 0;
-                Object.keys(capitulos).forEach(item2 => {
-                    result.push({
-                        capitulo: capitulos[item2],
-                        docsEnviados: arrayCap[i++],
-                        docsAprovados: 0
-                    })
-                })
-                if (result.length > 0)
-                    resolve(result);
-                else reject(null)
             })
+            if (result.length > 0)
+                resolve(result);
+            else reject(null)
         })
-
     });
 }
 
-export const getRegsIntCapitulo = async () => {
+export const getDocEleByCap = async (idCap) => {
+    console.log('ele',idCap);
+    let result = [];
+    return new Promise(function(resolve,reject){
+        const docRef = databaseRef.child('docEleitoral').orderByChild('capitulo/cap_cod').equalTo(idCap);
+        docRef.once('value', snapshot => {
+            let documentos = snapshot.val();
+            console.log('ele2',documentos);
+            Object.keys(documentos).forEach(item => {
+                result.push({
+                    capitulo: documentos[item].capitulo,
+                    data: documentos[item].doc_dataEnvio,
+                    status: documentos[item].doc_status
+                })
+            })
+
+            console.log('ele333',result);
+            if (result.length > 0)
+                resolve(result);
+            else reject(null)
+        })
+    });
+}
+
+export const getDocEleByStatus = async (status) => {
+    let result = [];
+    return new Promise(function(resolve,reject){
+        const docRef = databaseRef.child('docEleitoral').orderByChild('doc_status').equalTo(status);
+        docRef.once('value', snapshot => {
+            let documentos = snapshot.val();
+            Object.keys(documentos).forEach(item => {
+                result.push({
+                    capitulo: documentos[item].capitulo,
+                    data: documentos[item].doc_dataEnvio,
+                    status: documentos[item].doc_status
+                })
+            })
+            if (result.length > 0)
+                resolve(result);
+            else reject(null)
+        })
+    });
+}
+
+//REG INTERNO
+export const getRegsInt = async () => {
     //capitulo - cidade - reg enviados - reg aprovado(t/f)
     let result = [];
     return new Promise(function (resolve, reject) {
-        const capituloRef = databaseRef.child('capitulo');
-        capituloRef.once('value', snapshot1 => {
-            let capitulos = snapshot1.val();
-            var arrayCap = Array(Object.keys(capitulos).length).fill(0),arrayAprovado = Array(Object.keys(capitulos).length).fill(false);
-            const regRef = databaseRef.child('regInterno');
-            regRef.once('value', snapshot2 => {
-                let regimentos = snapshot2.val();
-                Object.keys(regimentos).forEach(item1 => {
-                    var i = 0;
-                    Object.keys(capitulos).every(item2 => {
-                        if (regimentos[item1].capitulo.cap_cod === capitulos[item2].cap_cod) {
-                            arrayCap[i]++;
-                            arrayAprovado = true;
-                            return false;
-                        }
-                        i++;
-                        return true;
-                    })
+        const regRef = databaseRef.child('regInterno');
+        regRef.once('value', snapshot => {
+            let regimentos = snapshot.val();
+            Object.keys(regimentos).forEach(item => {
+                result.push({
+                    capitulo: regimentos[item].capitulo,
+                    data: regimentos[item].reg_dataEnvio,
+                    status: regimentos[item].reg_status
                 })
-                var i = 0;
-                Object.keys(capitulos).forEach(item2 => {
-                    result.push({
-                        capitulo: capitulos[item2],
-                        regEnviados: arrayCap[i],
-                        regAprovado: arrayAprovado[i]
-                    })
-                    i++;
-                })
-                if (result.length > 0)
-                    resolve(result);
-                else reject(null)
             })
+            if (result.length > 0)
+                resolve(result);
+            else reject(null)
         })
     });
 }
 
+export const getRegIntByCap = async (idCap) => {
+    let result = [];
+    return new Promise(function (resolve, reject) {
+        const regRef = databaseRef.child('regInterno').orderByChild('capitulo/cap_cod').equalTo(idCap);
+        regRef.once('value', snapshot => {
+            let regimentos = snapshot.val();
+            Object.keys(regimentos).forEach(item => {
+                result.push({
+                    capitulo: regimentos[item].capitulo,
+                    data: regimentos[item].reg_dataEnvio,
+                    status: regimentos[item].reg_status
+                })
+            })
+            if (result.length > 0)
+                resolve(result);
+            else reject(null)
+        })
+    });
+}
+
+export const getRegIntByStatus = async (status) => {
+    let result = [];
+    return new Promise(function (resolve, reject) {
+        const regRef = databaseRef.child('regInterno').orderByChild('reg_status').equalTo(status);
+        regRef.once('value', snapshot => {
+            let regimentos = snapshot.val();
+            Object.keys(regimentos).forEach(item => {
+                result.push({
+                    capitulo: regimentos[item].capitulo,
+                    data: regimentos[item].reg_dataEnvio,
+                    status: regimentos[item].reg_status
+                })
+            })
+            if (result.length > 0)
+                resolve(result);
+            else reject(null)
+        })
+    });
+}
+
+//CHEVALIER
 export const getIndicacoes = async () => {
     const indicRef = databaseRef.child('indicacao').orderByChild('indic_nomeIndicado');
     let result = [];
@@ -188,6 +263,7 @@ export const getIndicacoesByCap = async (idCap) => {
     })
 }
 
+//ARQUIVOS
 export const getDownloads = async () => {
     const downloadRef = databaseRef.child('downloads');
     const arqsRef = databaseRef.child('arquivo');
@@ -211,6 +287,7 @@ export const getDownloads = async () => {
     })
 }
 
+//CURSOS
 export const getInscritos = async () => {
     const cursoRef = databaseRef.child('curso');
     const inscRef = databaseRef.child('inscricao');

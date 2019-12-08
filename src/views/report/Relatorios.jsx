@@ -5,9 +5,14 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import { PdfDocument } from "utility/ReportSaver.js";
 import { 
   getTopicosArea,
+  getTopicosAreaByName,
   getTicketsArea,
-  getDocsEleCapitulo,
-  getRegsIntCapitulo,
+  getDocsEle,
+  getDocEleByCap,
+  getDocEleByStatus,
+  getRegsInt,
+  getRegsIntByCap,
+  getRegsIntByStatus,
   getIndicacoes,
   getIndicacoesByCap,
   getDownloads,
@@ -43,49 +48,56 @@ const reports = [
     label: 'Tópicos criados por área',
     columns: ['Nome da área','Quantidade de tópicos'],
     dropdownCap: false,
-    filterLabel: ''
+    filterLabel: 'Nome da área',
+    dropdownStatus: null
   },
   {
     value: 'ticketArea',
     label: 'Tickets enviados por área',
     columns: ['Nome da área','Quantidade de tickets'],
     dropdownCap: false,
-    filterLabel: ''
+    filterLabel: 'Nome da área',
+    dropdownStatus: null
   },
   {
-    value: 'docEleitoralCap',
-    label: 'Documento Eleitoral por capítulo',
-    columns: ['Capítulo','Cidade','Documentos enviados'],
+    value: 'docEleitoral',
+    label: 'Documento Eleitoral',
+    columns: ['Capítulo','Cidade', 'Data envio', 'Status'],
     dropdownCap: true,
-    filterLabel: ''
+    filterLabel: null,
+    dropdownStatus: ['Enviado','Aprovado','Reprovado']
   },
   {
-    value: 'regInternoCap',
-    label: 'Regimento Interno por capítulo',
-    columns: ['Capítulo','Cidade','Regimentos enviados','Aprovado'],
+    value: 'regInterno',
+    label: 'Regimento Interno',
+    columns: ['Capítulo','Cidade', 'Data envio', 'Status'],
     dropdownCap: true,
-    filterLabel: ''
+    filterLabel: null,
+    dropdownStatus: ['Enviado','Aprovado','Reprovado']
   },
   {
-    value: 'chevalierCap',
+    value: 'chevalier',
     label: 'Chaveliers Indicados',
     columns: ['Nome indicado', 'Capítulo', 'Data envio', 'Status'],
     dropdownCap: true,
-    filterLabel: 'Nome indicado'
+    filterLabel: 'Nome indicado',
+    dropdownStatus: ['Enviado','Encaminhado','Votacao','Aprovado','Reprovado']
   },
   {
     value: 'downloads',
     label: 'Arquivos baixados',
     columns: ['Nome','Quantidade de downloads'],
     dropdownCap: false,
-    filterLabel: 'Nome arquivo'
+    filterLabel: 'Nome arquivo',
+    dropdownStatus: null
   },
   {
     value: 'curso',
     label: 'Inscritos em cursos',
     dropdownCap: false,
     columns: ['Título do curso','Status','Inscritos'],
-    filterLabel: 'Título curso'
+    filterLabel: 'Título curso',
+    dropdownStatus: ['Visível','Invisível']
   }
 ]
 
@@ -96,8 +108,7 @@ class Relatorios extends React.Component {
     filter: "",
     capitulos: [],
     selectedCap: null,
-    disabledDropdown: true,
-    disabledOrdering: true,
+    selectedStatus: null,
     tableData: null
   };
 
@@ -107,13 +118,21 @@ class Relatorios extends React.Component {
     this.search = this.search.bind(this);
     this.getTableHeaders = this.getTableHeaders.bind(this);
     this.getTableRows = this.getTableRows.bind(this);
-    //this.getData = this.getData.bind(this);
+    this.fillTableData = this.fillTableData.bind(this);
   }
 
   onChange = (myState, obj) => {
     this.setState({
       [myState]: obj
     });
+  }
+
+  fillTableData = (report,data) => {
+    console.log('fillinf',report,data);
+    this.setState({
+      searchedReport: report,
+      tableData: data
+    })
   }
 
   componentDidMount() {
@@ -126,94 +145,100 @@ class Relatorios extends React.Component {
 
   search() {
     const { selectedReport,searchedReport } = this.state;
-    console.log('selected',selectedReport);
-    console.log('serached',searchedReport);
+    // console.log('selected',selectedReport);
+    // console.log('serached',searchedReport);
     if (selectedReport === null) {
       alert('Selecione um relatório!');
       return null;
     }
     switch (selectedReport.value) {
       case 'topicoArea':
-        const responseTopico = getTopicosArea();
-        responseTopico.then(topicos => {
-          this.setState({
-            searchedReport: selectedReport,
-            tableData: topicos
-          })
-        })
-        break;
-      case 'ticketArea':
-        const responseTicket = getTicketsArea();
-        responseTicket.then(tickets => {
-          this.setState({
-            searchedReport: selectedReport,
-            tableData: tickets
-          })
-        })
-        break;
-      case 'docEleitoralCap':
-        const responseDoc = getDocsEleCapitulo();
-        responseDoc.then(docs => {
-          this.setState({
-            searchedReport: selectedReport,
-            tableData: docs
-          })
-        })
-        break;
-      case 'regInternoCap':
-        const responseReg = getRegsIntCapitulo();
-        responseReg.then(regs => {
-          this.setState({
-            searchedReport: selectedReport,
-            tableData: regs
-          })
-        })
-        break;
-      case 'chevalierCap':
-        if(this.state.selectedCap===null) {
-          const responseChev = getIndicacoes();
-          responseChev.then(indics => {
-            this.setState({
-              searchedReport: selectedReport,
-              tableData: indics
-            })
-          })
-        } 
+        if(this.state.filter === "" ) {
+          const responseTopico = getTopicosArea();
+          responseTopico.then(topicos => this.fillTableData(selectedReport,topicos))
+        }
         else {
-          const responseChevCap = getIndicacoesByCap(this.state.selectedCap.cap_cod);
-          responseChevCap.then(indics => {
+          console.log('buscandoTA',this.state.filter)
+          const responseTopicoName = getTopicosAreaByName(this.state.filter);
+          responseTopicoName.then(topicos => {
+            console.log('topicosAAAA',topicos);
             this.setState({
               searchedReport: selectedReport,
-              tableData: indics
+              tableData: topicos
             })
           })
           .catch(function(error){
-            this.setState({
-              searchedReport: selectedReport,
-              tableData: null
-            })
+            console.log('errrrrrrrrrrrrrrou')
+          })
+        }
+        
+        break;
+      case 'ticketArea':
+        const responseTicket = getTicketsArea();
+        responseTicket.then(tickets => this.fillTableData(selectedReport,tickets))
+        break;
+      case 'docEleitoral':
+        if(this.state.selectedCap === null && this.state.selectedStatus === null) { //sem filtro nenhum
+          const responseDoc = getDocsEle();
+          responseDoc.then(docs => this.fillTableData(selectedReport,docs))
+        }
+        else if(this.state.selectedCap !== null) { //capitulo
+          console.log('capzoaoao');
+          const responseDocCap = getDocEleByCap(this.state.selectedCap.cap_cod);
+          responseDocCap.then(docs => {
+            if(this.state.selectedStatus !== null) { // status tbm
+              var obj = Object;
+              console.log('capzoaoao&&&status');
+              Object.keys(docs).map(item => {
+                if(docs[item].status === this.state.selectedStatus)
+                  Object.keys(obj).push(docs[item]);
+              })
+              this.fillTableData(selectedReport,obj);
+            }
+            else {
+
+            console.log('0222222222222');
+              this.fillTableData(selectedReport,docs); //só capitulo
+            }
+          })
+          .catch(function(error){
+
+          })
+        }
+        else { //só status
+          const responseDocStatus = getDocEleByStatus(this.state.selectedStatus);
+          responseDocStatus.then(docs => this.fillTableData(selectedReport,docs))
+          .catch(function(error){
+
+          })
+        }
+        break;
+      case 'regInterno':
+        const responseReg = getRegsInt();
+        responseReg.then(regs => this.fillTableData(selectedReport,regs))
+        break;
+      case 'chevalier':
+        if(this.state.selectedCap === null) {
+          const responseChev = getIndicacoes();
+          responseChev.then(indics => this.fillTableData(selectedReport,indics))
+        } 
+        else {
+          const responseChevCap = getIndicacoesByCap(this.state.selectedCap.cap_cod);
+          responseChevCap.then(indics => this.fillTableData(selectedReport,indics))
+          .catch(function(error){
+
           })
         } 
         break;
 
       case 'downloads':
         const responseDownloads = getDownloads();
-        responseDownloads.then(downs => {
-          this.setState({
-            searchedReport: selectedReport,
-            tableData: downs
-          })
-        })
+        responseDownloads.then(downs => this.fillTableData(selectedReport,downs))
         break;
 
       case 'curso':
         const responseCursos = getInscritos();
-        responseCursos.then(cursos => {
-          this.setState({
-            searchedReport: selectedReport,
-            tableData: cursos
-          })
-        })
+        responseCursos.then(cursos => this.fillTableData(selectedReport,cursos))
         break;
     }
   }
@@ -239,24 +264,25 @@ class Relatorios extends React.Component {
               <th scope="col">Quantidade de tickets</th>
             </tr>
           );
-      case 'docEleitoralCap':
+      case 'docEleitoral':
           return (
             <tr>
               <th scope="col">Capítulo</th>
               <th scope="col">Cidade</th>
-              <th scope="col">Documentos enviados</th>
+              <th scope="col">Data de envio</th>
+              <th scope="col">Status</th>
             </tr>
           );
-      case 'regInternoCap':
+      case 'regInterno':
           return (
             <tr>
               <th scope="col">Capítulo</th>
               <th scope="col">Cidade</th>
-              <th scope="col">Regimentos enviados</th>
-              <th scope="col">Aprovado</th>
+              <th scope="col">Data de envio</th>
+              <th scope="col">Status</th>
             </tr>
           );
-      case 'chevalierCap':
+      case 'chevalier':
         return (
           <tr>
             <th scope="col">Nome indicado</th>
@@ -311,7 +337,7 @@ class Relatorios extends React.Component {
             </td>
           </tr>
         )
-      case 'docEleitoralCap':
+      case 'docEleitoral':
           return (
             <tr key={index}>
               <td>
@@ -321,11 +347,14 @@ class Relatorios extends React.Component {
                 {dataRow.capitulo.cap_cidade}
               </td>
               <td>
-                {dataRow.docsEnviados}
+                {dataRow.data}
+              </td>
+              <td>
+                {dataRow.status}
               </td>
             </tr>
           );
-      case 'regInternoCap':
+      case 'regInterno':
           return (
             <tr key={index}>
               <td>
@@ -335,16 +364,14 @@ class Relatorios extends React.Component {
                 {dataRow.capitulo.cap_cidade}
               </td>
               <td>
-                {dataRow.regEnviados}
+                {dataRow.data}
               </td>
               <td>
-              { 
-                (dataRow.regEnviados > 0) ? (dataRow.regAprovado) ? 'Sim' : 'Não' : '-'
-              }
+                {dataRow.status}
               </td>
             </tr>
           );
-      case 'chevalierCap':
+      case 'chevalier':
         return (
           <tr key={index}>
             <td>
@@ -392,8 +419,7 @@ class Relatorios extends React.Component {
   }
 
   render() {
-    const { capitulos, disabledDropdown, disabledOrdering, searchedReport, tableData } = this.state;
-    console.log('selectRepo',this.state.selectedReport);
+    const { capitulos, searchedReport, tableData } = this.state;
     return (  
       <>
         <Header />
@@ -420,13 +446,12 @@ class Relatorios extends React.Component {
                                 reports.map((option, index) => {
                                   return (
                                     <DropdownItem key={index} onClick={() => {
-                                      this.onChange("selectedReport", option);
-                                      if(this.state.selectedCap!==null)
-                                        this.onChange("selectedCap",null);
-                                      if(option.dropdownCap) 
-                                        this.onChange('disabledDropdown',false);
-                                      else if(this.state.disabledDropdown === false)
-                                        this.onChange('disabledDropdown',true);
+                                      this.setState({
+                                        selectedReport: option,
+                                        selectedCap: null,
+                                        selectedStatus: null,
+                                        filter: ""
+                                      })
                                       
                                     }}>
                                       {option.label}
@@ -445,6 +470,7 @@ class Relatorios extends React.Component {
                           </Grid>
                           <Grid item>
                             <TextField
+                              disabled={this.state.selectedReport ? (this.state.selectedReport.filterLabel === null ? true : false) : true}
                               label={this.state.selectedReport ? this.state.selectedReport.filterLabel : null}
                               variant="outlined"
                               value={this.state.filter}
@@ -456,7 +482,7 @@ class Relatorios extends React.Component {
                         </Grid>
                         <Grid item>
                           <UncontrolledDropdown>
-                            <DropdownToggle caret disabled={disabledDropdown}>
+                            <DropdownToggle caret disabled={this.state.selectedReport ? !this.state.selectedReport.dropdownCap : true}>
                               {this.state.selectedCap ? this.state.selectedCap.cap_nome + ' n° ' + this.state.selectedCap.cap_numero : 'Capítulo'}
                             </DropdownToggle>
                             <DropdownMenu>
@@ -478,17 +504,20 @@ class Relatorios extends React.Component {
                         </Grid>
                         <Grid item>
                           <UncontrolledDropdown>  
-                            <DropdownToggle caret disabled={disabledDropdown}>
-                                {}
+                            <DropdownToggle caret 
+                              disabled={this.state.selectedReport ? (this.state.selectedReport.dropdownStatus === null ? true : false) : true}
+                              >
+                                {this.state.selectedStatus ? this.state.selectedStatus : 'Status'}
                             </DropdownToggle>
                             <DropdownMenu>
                                 {
-                                  disabledOrdering === true && 
-                                  Object.keys(capitulos).map((item, index) => {
+                                  
+                                  this.state.selectedReport && this.state.selectedReport.dropdownStatus!== null && 
+                                  this.state.selectedReport.dropdownStatus.map((item, index) => {
                                       return (
-                                      <DropdownItem key={index} onClick={() => { this.onChange("selectedCap", capitulos[item]) }}>
-                                          {capitulos[item].cap_nome} n° {capitulos[item].cap_numero}
-                                      </DropdownItem>
+                                        <DropdownItem key={item} onClick={() => { this.onChange("selectedStatus", this.state.selectedReport.dropdownStatus[index]) }}>
+                                            {this.state.selectedReport.dropdownStatus[index]}
+                                        </DropdownItem>
                                       );
                                   })
                                 }
