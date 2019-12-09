@@ -7,16 +7,18 @@ import {
   getTopicosArea,
   getTopicosAreaByName,
   getTicketsArea,
+  getTicketsAreaByName,
   getDocsEle,
   getDocEleByCap,
   getDocEleByStatus,
-  getRegsInt,
-  getRegsIntByCap,
-  getRegsIntByStatus,
+  getRegInt,
+  getRegIntByCap,
+  getRegIntByStatus,
   getIndicacoes,
   getIndicacoesByCap,
   getDownloads,
-  getInscritos
+  getInscritos,
+  getInscritosByStatus
 } from "services/reportService";
 import {
   Container,
@@ -41,6 +43,7 @@ import {
 } from "@material-ui/core";
 import PrintIcon from '@material-ui/icons/Print';
 import Header from "components/Headers/Header.jsx";
+import { getIndicacoesByStatus } from "../../services/reportService";
 
 const reports = [
   {
@@ -56,7 +59,7 @@ const reports = [
     label: 'Tickets enviados por área',
     columns: ['Nome da área','Quantidade de tickets'],
     dropdownCap: false,
-    filterLabel: 'Nome da área',
+    filterLabel: null,//Nome da área',
     dropdownStatus: null
   },
   {
@@ -80,7 +83,7 @@ const reports = [
     label: 'Chaveliers Indicados',
     columns: ['Nome indicado', 'Capítulo', 'Data envio', 'Status'],
     dropdownCap: true,
-    filterLabel: 'Nome indicado',
+    filterLabel: null,//'Nome indicado',
     dropdownStatus: ['Enviado','Encaminhado','Votacao','Aprovado','Reprovado']
   },
   {
@@ -88,7 +91,7 @@ const reports = [
     label: 'Arquivos baixados',
     columns: ['Nome','Quantidade de downloads'],
     dropdownCap: false,
-    filterLabel: 'Nome arquivo',
+    filterLabel: null,//'Nome arquivo',
     dropdownStatus: null
   },
   {
@@ -96,7 +99,7 @@ const reports = [
     label: 'Inscritos em cursos',
     dropdownCap: false,
     columns: ['Título do curso','Status','Inscritos'],
-    filterLabel: 'Título curso',
+    filterLabel: null,//'Título curso',
     dropdownStatus: ['Visível','Invisível']
   }
 ]
@@ -109,7 +112,11 @@ class Relatorios extends React.Component {
     capitulos: [],
     selectedCap: null,
     selectedStatus: null,
-    tableData: null
+    tableData: null,
+    searchedCap: null,
+    searchedStatus: null,
+    searchedFilter: null,
+    gerarPdf: false
   };
 
   constructor(props) {
@@ -151,6 +158,13 @@ class Relatorios extends React.Component {
       alert('Selecione um relatório!');
       return null;
     }
+    this.setState({
+      searchedCap: null,
+      searchedFilter: null,
+      searchedStatus: null,
+      gerarPdf: false
+    }) 
+
     switch (selectedReport.value) {
       case 'topicoArea':
         if(this.state.filter === "" ) {
@@ -158,24 +172,34 @@ class Relatorios extends React.Component {
           responseTopico.then(topicos => this.fillTableData(selectedReport,topicos))
         }
         else {
-          console.log('buscandoTA',this.state.filter)
           const responseTopicoName = getTopicosAreaByName(this.state.filter);
           responseTopicoName.then(topicos => {
-            console.log('topicosAAAA',topicos);
+            this.setState({
+              searchedReport: selectedReport,
+              tableData: topicos,
+              searchedFilter: this.state.filter
+            })
+          })
+          .catch(function(error){})
+        }
+        
+        break;
+      case 'ticketArea':
+        if(this.state.filter === "") {
+          const responseTicket = getTicketsArea();
+          responseTicket.then(tickets => this.fillTableData(selectedReport,tickets))
+        }
+        else {
+          const responseTicketName = getTicketsAreaByName(this.state.filter);
+          responseTicketName.then(topicos => {
             this.setState({
               searchedReport: selectedReport,
               tableData: topicos
             })
           })
-          .catch(function(error){
-            console.log('errrrrrrrrrrrrrrou')
-          })
+          .catch(function(error){})
         }
-        
-        break;
-      case 'ticketArea':
-        const responseTicket = getTicketsArea();
-        responseTicket.then(tickets => this.fillTableData(selectedReport,tickets))
+       
         break;
       case 'docEleitoral':
         if(this.state.selectedCap === null && this.state.selectedStatus === null) { //sem filtro nenhum
@@ -183,51 +207,97 @@ class Relatorios extends React.Component {
           responseDoc.then(docs => this.fillTableData(selectedReport,docs))
         }
         else if(this.state.selectedCap !== null) { //capitulo
-          console.log('capzoaoao');
           const responseDocCap = getDocEleByCap(this.state.selectedCap.cap_cod);
           responseDocCap.then(docs => {
             if(this.state.selectedStatus !== null) { // status tbm
-              var obj = Object;
-              console.log('capzoaoao&&&status');
               Object.keys(docs).map(item => {
-                if(docs[item].status === this.state.selectedStatus)
-                  Object.keys(obj).push(docs[item]);
+                if(docs[item].status !== this.state.selectedStatus)
+                  delete docs[item];
               })
-              this.fillTableData(selectedReport,obj);
+              this.fillTableData(selectedReport,docs);  
+              this.setState({
+                searchedCap: this.state.selectedCap,
+                searchedStatus: this.state.selectedStatus
+              })
             }
             else {
-
-            console.log('0222222222222');
               this.fillTableData(selectedReport,docs); //só capitulo
+              this.onChange('searchedCap',this.state.selectedCap);
             }
           })
-          .catch(function(error){
-
-          })
+          .catch(function(error){})
         }
         else { //só status
           const responseDocStatus = getDocEleByStatus(this.state.selectedStatus);
           responseDocStatus.then(docs => this.fillTableData(selectedReport,docs))
-          .catch(function(error){
-
-          })
+          .catch(function(error){})
+          this.onChange('searchedStatus',this.state.selectedStatus);
         }
         break;
       case 'regInterno':
-        const responseReg = getRegsInt();
-        responseReg.then(regs => this.fillTableData(selectedReport,regs))
+        if(this.state.selectedCap === null && this.state.selectedStatus === null) { //sem filtro
+          const responseReg = getRegInt();
+          responseReg.then(regs => this.fillTableData(selectedReport,regs));
+        }
+        else if(this.state.selectedCap !== null) { //escolheu cap
+          const responseRegCap = getRegIntByCap(this.state.selectedCap.cap_cod);
+          responseRegCap.then(regs => {
+            if(this.state.selectedStatus !== null) { //cap e status 
+              Object.keys(regs).forEach(item => {
+                if(regs[item].status !== this.state.selectedStatus)
+                  delete regs[item];
+              })
+              this.fillTableData(selectedReport,regs);
+              this.setState({
+                searchedCap: this.state.selectedCap,
+                searchedStatus: this.state.selectedStatus
+              })
+            }
+            else { 
+              this.fillTableData(selectedReport,regs);
+              this.onChange('searchedCap',this.state.selectedCap);
+            }
+          })
+          .catch(function(error){})
+        }
+        else { //status
+          const responseRegStatus = getRegIntByStatus(this.state.selectedStatus);
+          responseRegStatus.then(regs => this.fillTableData(selectedReport,regs))
+          .catch(function(error){})
+          this.onChange('searchedStatus',this.state.selectedStatus);
+        }
         break;
       case 'chevalier':
-        if(this.state.selectedCap === null) {
+        if(this.state.selectedCap === null && this.state.selectedStatus === null) { //sem filtro
           const responseChev = getIndicacoes();
           responseChev.then(indics => this.fillTableData(selectedReport,indics))
         } 
-        else {
+        else if(this.state.selectedCap !== null){ // escolheu cap
           const responseChevCap = getIndicacoesByCap(this.state.selectedCap.cap_cod);
-          responseChevCap.then(indics => this.fillTableData(selectedReport,indics))
-          .catch(function(error){
-
+          responseChevCap.then(indics => {
+            if(this.state.selectedStatus !== null) { //cap e status
+              Object.keys(indics).forEach(item => {
+                if(indics[item].status !== this.state.selectedStatus)
+                  delete indics[item];
+              })
+              this.fillTableData(selectedReport,indics);
+              this.setState({
+                searchedCap: this.state.selectedCap,
+                searchedStatus: this.state.selectedStatus
+              })
+            }
+            else {
+              this.fillTableData(selectedReport,indics);
+              this.onChange('searchedCap',this.state.selectedCap);
+            }
           })
+          .catch(function(error){})
+        }
+        else { //só status
+          const responseIndicStatus = getIndicacoesByStatus(this.state.selectedStatus);
+          responseIndicStatus.then(indics => this.fillTableData(selectedReport,indics))
+          .catch(function(error){})
+          this.onChange('searchedStatus',this.state.selectedStatus);
         } 
         break;
 
@@ -237,8 +307,16 @@ class Relatorios extends React.Component {
         break;
 
       case 'curso':
-        const responseCursos = getInscritos();
-        responseCursos.then(cursos => this.fillTableData(selectedReport,cursos))
+        if(this.state.selectedStatus === null) { //sem filtro
+          const responseCursos = getInscritos();
+          responseCursos.then(cursos => this.fillTableData(selectedReport,cursos))
+        }
+        else {
+          const responseCursoStatus = getInscritosByStatus(this.state.selectedStatus === 'Visível' ? true : false);
+          responseCursoStatus.then(cursos => this.fillTableData(selectedReport,cursos))
+          .catch(function(error){})
+          this.onChange('searchedStatus',this.state.selectedStatus);
+        }
         break;
     }
   }
@@ -378,7 +456,7 @@ class Relatorios extends React.Component {
               {dataRow.nome}
             </td>
             <td>
-            {dataRow.capitulo.cap_nome} n° {dataRow.capitulo.cap_numero}
+              {dataRow.capitulo.cap_nome} n° {dataRow.capitulo.cap_numero}
             </td>
             <td>
               {dataRow.dataEnvio}
@@ -420,6 +498,7 @@ class Relatorios extends React.Component {
 
   render() {
     const { capitulos, searchedReport, tableData } = this.state;
+    console.log('renderReport',this.state);
     return (  
       <>
         <Header />
@@ -530,6 +609,7 @@ class Relatorios extends React.Component {
                               color="primary"
                               type="button"
                               onClick={() => {
+                                
                                 this.search();
                               }}
                             >
@@ -543,18 +623,30 @@ class Relatorios extends React.Component {
                               variant="contained"
                               color="secondary"
                               startIcon={<PrintIcon/>}
+                              onClick={() => this.onChange('gerarPdf',true)}
                             >
-                            <PDFDownloadLink
-                              document={<PdfDocument data={tableData} report={searchedReport} />}
-                              fileName="relatorio.pdf"  
-                              style={{
-                                color: "white",
-                              }}
-                            >
-                              {({ blob, url, loading, error }) => 
-                                loading ? "Carregando documento..." : "Gerar arquivo PDF"
+                            {
+                              this.state.gerarPdf &&
+                                <PDFDownloadLink
+                                document={
+                                <PdfDocument
+                                  data={tableData} 
+                                  report={searchedReport} 
+                                  searchedCap={this.state.searchedCap}
+                                  searchedFilter={this.state.searchedFilter}
+                                  searchedStatus={this.state.searchedStatus}
+                                />
                               }
-                            </PDFDownloadLink>
+                                fileName="relatorio.pdf"
+                                style={{
+                                  color: "white",
+                                }}
+                              >
+                                {({ blob, url, loading, error }) => 
+                                  loading ? "Carregando documento..." : "Gerar arquivo PDF"
+                                }
+                              </PDFDownloadLink>
+                            }
                             </ButtonIcon>
                           </Grid>
                         }
@@ -567,6 +659,15 @@ class Relatorios extends React.Component {
                     <div>
                       <br/>
                       <Typography variant="h5" align="center">Relatório de {searchedReport.label}</Typography>
+                      {
+                        (this.state.searchedCap!== null || this.state.searchedStatus!== null || this.state.searchedFilter!==null) &&
+                        <Typography variant="subtitle2" align="center">
+                          Filtro -  
+                          {this.state.searchedCap!== null ? ' Capitulo: ' + this.state.searchedCap.cap_nome : null}
+                          {this.state.searchedStatus!== null ? ' Status: ' + this.state.searchedStatus : null}
+                          {this.state.searchedFilter!== null ? ' Texto: ' + this.state.searchedFilter : null}
+                        </Typography>
+                      }
                       <br/>
                       <Table className="align-items-center table-flush" responsive>
                         <thead className="thead-light">

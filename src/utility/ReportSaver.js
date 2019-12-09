@@ -29,13 +29,18 @@ const styles = StyleSheet.create({
         width: 1395,
     },
     reportTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontFamily: 'Helvetica',
         fontWeight: 800
     },
-    // tableHeader: {
-    //     fonsize: 16
-    // },
+    reporSubtitle: {
+        fontSize: 16,
+        fontFamily: 'Helvetica'
+    },
+    tableHeader: {
+        fonsize: 18,
+        textAlign: "center"
+    }
     // tableRow: {
     //     fontFamily: 'Times-Roman',
     //     fontSize: 14
@@ -55,6 +60,15 @@ export function PdfDocument(props) {
                     <Text style={styles.reportTitle}>
                         Relatório de {props.report.label}
                     </Text>
+                    {
+                        (props.searchedCap!==null || props.searchedFilter!== null || props.searchedStatus!== null) &&
+                        <Text style={styles.reporSubtitle}>
+                            Filtro - 
+                            {props.searchedCap!==null ? ' Capítulo: ' + props.searchedCap.cap_nome : null}
+                            {props.searchedFilter!==null ? ' Texto: ' + props.searchedFilter : null}
+                            {props.searchedStatus!==null ? ' Status: ' + props.searchedStatus : null}
+                        </Text>
+                    }
                 </View>
                 <Table data={props.data}>
                     <TableHeader>
@@ -62,13 +76,11 @@ export function PdfDocument(props) {
                         props.report && props.report.columns &&
                         props.report.columns.map((item,index) => {
                             return (
-                                <TableCell key={index}>{item}</TableCell>
+                                <TableCell styles={styles.tableHeader} key={index}>{item}</TableCell>
                             );
                         })
                     }
                     </TableHeader>
-                        {/* <DataTableCell getContent={(r) => r.name}/>
-                        <DataTableCell getContent={(r) => r.phone}/> */}
                     {
                       props.report.value === 'topicoArea' ?
                       <TableBody>
@@ -80,28 +92,29 @@ export function PdfDocument(props) {
                         <DataTableCell getContent={(r) => r.area.areaticket_nome} />
                         <DataTableCell getContent={(r) => r.qntdTickets + ''} />
                       </TableBody>
-                      : props.report.value === 'docEleitoralCap' ?
+                      : props.report.value === 'docEleitoral' ?
                       <TableBody>
                         <DataTableCell getContent={(r) =>
                           r.capitulo.cap_nome + ' n° '+ r.capitulo.cap_numero
                          } />
                         <DataTableCell getContent={(r) => r.capitulo.cap_cidade} />
-                        <DataTableCell getContent={(r) => r.docsEnviados + ''} />
+                        <DataTableCell getContent={(r) => r.data} />
+                        <DataTableCell getContent={(r) => r.status} />
                       </TableBody>
-                      : props.report.value === 'regInternoCap' ?
+                      : props.report.value === 'regInterno' ?
                       <TableBody>
                         <DataTableCell getContent={(r) => 
                         r.capitulo.cap_nome + ' n° '+ r.capitulo.cap_numero
                         } />
                         <DataTableCell getContent={(r) => r.capitulo.cap_cidade} />
-                        <DataTableCell getContent={(r) => r.regEnviados + ''} />
-                        <DataTableCell getContent={(r) => (r.regEnviados > 0) ? (r.regAprovado) ? 'Sim' : 'Não' : '-'} />
+                        <DataTableCell getContent={(r) => r.data} />
+                        <DataTableCell getContent={(r) => r.status} />
                       </TableBody>
-                      : props.report.value === 'chevalierCap' ?
+                      : props.report.value === 'chevalier' ?
                       <TableBody>
                         <DataTableCell getContent={(r) => r.nome} />
                         <DataTableCell getContent={(r) => 
-                        r.capitulo.cap_nome + ' n° '+ r.capitulo.cap_numero
+                        r.capitulo.cap_nome + ' n° '+ r.capitulo.cap_numero 
                         } />
                         <DataTableCell getContent={(r) => r.dataEnvio} />
                         <DataTableCell getContent={(r) => r.status} />
@@ -111,8 +124,15 @@ export function PdfDocument(props) {
                         <DataTableCell getContent={(r) => r.nome} />
                         <DataTableCell getContent={(r) => r.downloaded + ''} />
                       </TableBody>
+                      : props.report.value === 'curso' ?
+                      <TableBody>
+                        <DataTableCell getContent={(r) => r.titulo} />
+                        <DataTableCell getContent={(r) => r.status} />
+                        <DataTableCell getContent={(r) => r.inscritos + ''} />
+                      </TableBody>
                       : 
                       <TableBody></TableBody>
+
                     }
                 </Table>
             </Page>

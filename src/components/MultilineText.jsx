@@ -7,8 +7,8 @@ class MultilineText extends React.Component {
     super(props);
     this.state = {
       text: props.text,
-      variant: props.variant ? props.variant : "b1",
-      align: props.align ? props.align : "inherit"
+      variant: props.variant ? props.variant : null,
+      align: props.align ? props.align : null
     }
   }
   
@@ -18,8 +18,8 @@ class MultilineText extends React.Component {
       if(this.props.text){
         this.setState({
           text: this.props.text,
-          variant: this.props.variant ? this.props.variant : "b1",
-          align: this.props.align ? this.props.align : "inherit"
+          variant: this.props.variant ? this.props.variant : null,
+          align: this.props.align ? this.props.align : null
         })
       }
     }
@@ -27,10 +27,16 @@ class MultilineText extends React.Component {
 
   render() {
     const {text,variant,align} = this.state;
-    console.log('state',this.state);
+    console.log('stateMultiline',this.state);
     return (
         String(text).split("\n").map(line => {
-            return <Typography variant={variant} align={align}>{line}</Typography>
+            if(variant === null && align === null)
+              return <Typography>{line}</Typography>
+            else if(variant !== null && align !== null)
+              return <Typography variant={variant} align={align}>{line}</Typography>
+            else if(variant!== null)
+              return <Typography variant={variant}>{line}</Typography>
+            else return <Typography align={align}>{line}</Typography>
         })
     );
   }

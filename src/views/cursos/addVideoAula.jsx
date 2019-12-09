@@ -133,7 +133,6 @@ class addVideoAula extends React.Component {
                         <thead className="thead-light">
                           <tr>
                             <th scope="col">Título</th>
-                            <th scope="col">Duração</th>
                             <th scope="col" />
                             <th scope="col" />
                           </tr>
@@ -147,9 +146,6 @@ class addVideoAula extends React.Component {
                               <tr key={index}>
                                 <td>
                                   {videos[item].video_titulo}
-                                </td>
-                                <td>
-                                  -
                                 </td>
                                 <td>
                                   <Link to={{pathname: '/admin/visualizar-video',state:{

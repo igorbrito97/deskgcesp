@@ -76,7 +76,7 @@ class StepperComponent extends React.Component {
             <div>
               {/* <Typography className={classes.instructions}>All steps completed</Typography> */}
               <Typography>Envio finalizado!</Typography>
-              <Button onClick={() => this.handleReset()}>Reiniciar</Button>
+              {/* <Button onClick={() => this.handleReset()}>Reiniciar</Button> */}
             </div>
           ) : (
             <div>

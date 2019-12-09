@@ -78,8 +78,8 @@ class AddCurso extends React.Component {
         id: this.props.location.state.id,
         nome: this.props.location.state.nome,
         descricao: this.props.location.state.descricao,
-        dataInicio: this.props.location.state.dataInicio,
-        dataFim: this.props.location.state.dataFim,
+        titulo:this.props.location.state.titulo,
+        subtitulo:this.props.location.state.subtitulo,
         idArea: this.props.location.state.idArea
       });
     }

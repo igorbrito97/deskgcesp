@@ -30,7 +30,10 @@ import imgRecursosMensagem2 from "assets/img/manual/recComMensagem2.png";
 import imgRecursosModal from "assets/img/manual/recComModal.png";
 import imgRecursosPainel1 from "assets/img/manual/recComPainel1.png";
 import imgRecursosPainel2 from "assets/img/manual/recComPainel2.png";
-
+//CURSOS
+import imgCursosAdm from "assets/img/manual/cursoAdm.png";
+import imgCursosAddVideo1 from "assets/img/manual/cursoAddVideo.png";
+import imgCursosAddVideo2 from "assets/img/manual/cursoAddVideo2.png";
 //CRUD
 import imgCrudAreaAdd from "assets/img/manual/crudAddArea.png";
 import imgCrudAreas from "assets/img/manual/crudArea.png";
@@ -407,8 +410,17 @@ class HelpDesk extends React.Component {
                         </Typography>
                         <br /><br />
                         <Typography>
-                          Ainda em desenvolvimento... 
+                          Na parte de curso para o administrador é possível adicionar, alterar e excluir um curso e para cada curso é possível adicionar,alterar e 
+                          excluir uma vídeo aula. Na parte de usuário é possível visualizar os cursos e se inscrever, ao se inscrevr é possível visualizar o vídeo.
+
                         </Typography>
+                        <br /><br />
+                        {this.showImage(imgCursosAdm)}
+                        <br /><br />
+                        {this.showImage(imgCursosAddVideo1)}
+                        <br /><br />
+                        {this.showImage(imgCursosAddVideo2)}
+                        <br /><br />
                       </TabPanel>
                       <TabPanel value={selectedTab} index={9} id="documento">
                         <Typography variant="h4" align="center">
